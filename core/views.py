@@ -6,12 +6,13 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
-from .models import Profile, Oferta, ClasificacionCandidato
+from .models import Profile, Oferta, ClasificacionCandidato, Postulacion
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
     if request.user.is_authenticated and request.user.profile.role == 'empresa':
-        postulantes = Profile.objects.filter(role='postulante').select_related('user')
+        postulantes_ids = Postulacion.objects.filter(oferta__empresa=request.user.profile).values_list('postulante_id', flat=True).distinct()
+        postulantes = Profile.objects.filter(id__in=postulantes_ids).select_related('user')
         clasificaciones = ClasificacionCandidato.objects.filter(empresa=request.user.profile)
         clasif_dict = {c.postulante_id: c.estado for c in clasificaciones}
         
@@ -27,9 +28,11 @@ def index(request):
             estado = clasif_dict.get(p.id, 'pendiente')
             p.estado_actual = estado
             columnas[estado].append(p)
+        mis_ofertas = Oferta.objects.filter(empresa=request.user.profile).order_by('-fecha_publicacion')
             
         return render(request, 'core/index_empresa.html', {
-            'columnas': columnas
+            'columnas': columnas,
+            'mis_ofertas': mis_ofertas
         })
 
     query = request.GET.get('q', '')
@@ -42,10 +45,20 @@ def index(request):
         ofertas = ofertas.filter(ubicacion__icontains=ubicacion)
         
     ofertas = ofertas.order_by('-fecha_publicacion')[:6]
+    
+    # Extraer postulaciones del usuario si es postulante
+    mis_postulaciones = []
+    postulaciones_ids = []
+    if request.user.is_authenticated and request.user.profile.role == 'postulante':
+        mis_postulaciones = Postulacion.objects.filter(postulante=request.user.profile).select_related('oferta', 'oferta__empresa').order_by('-fecha_postulacion')
+        postulaciones_ids = list(mis_postulaciones.values_list('oferta_id', flat=True))
+
     return render(request, 'core/index.html', {
         'ofertas': ofertas,
         'q': query,
-        'u': ubicacion
+        'u': ubicacion,
+        'mis_postulaciones': mis_postulaciones,
+        'postulaciones_ids': postulaciones_ids
     })
 
 def registro(request):
@@ -86,7 +99,28 @@ def user_logout(request):
 
 @login_required
 def dashboard(request):
-    return render(request, 'core/dashboard.html')
+    context = {}
+    if request.user.profile.role == 'empresa':
+        postulantes_ids = Postulacion.objects.filter(oferta__empresa=request.user.profile).values_list('postulante_id', flat=True).distinct()
+        postulantes = Profile.objects.filter(id__in=postulantes_ids).select_related('user')
+        clasificaciones = ClasificacionCandidato.objects.filter(empresa=request.user.profile)
+        clasif_dict = {c.postulante_id: c.estado for c in clasificaciones}
+        
+        postulantes_pendientes = []
+        for p in postulantes:
+            if clasif_dict.get(p.id, 'pendiente') == 'pendiente':
+                postulantes_pendientes.append(p)
+                
+        context['postulantes_pendientes'] = postulantes_pendientes
+        
+        # Calculate stats for the dashboard
+        context['stats_empresa'] = {
+            'pendientes': len(postulantes_pendientes),
+            'entrevistas': list(clasif_dict.values()).count('entrevista_pendiente') + list(clasif_dict.values()).count('entrevistado'),
+            'cumplen': list(clasif_dict.values()).count('cumple')
+        }
+        
+    return render(request, 'core/dashboard.html', context)
 
 def empleo(request):
     return render(request, 'core/empleo.html')
@@ -186,6 +220,9 @@ def actualizar_estado_candidato(request):
             
         postulante = get_object_or_404(Profile, id=postulante_id, role='postulante')
         
+        # Validar que el postulante realmente ha aplicado a una oferta de esta empresa
+        if not Postulacion.objects.filter(oferta__empresa=request.user.profile, postulante=postulante).exists():
+            return JsonResponse({'error': 'El candidato no ha postulado a tu empresa'}, status=403)
         clasificacion, created = ClasificacionCandidato.objects.get_or_create(
             empresa=request.user.profile,
             postulante=postulante,
@@ -199,5 +236,21 @@ def actualizar_estado_candidato(request):
         return JsonResponse({'success': True, 'estado': nuevo_estado})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+@login_required
+def aplicar_oferta(request, oferta_id):
+    if request.user.profile.role != 'postulante':
+        messages.error(request, 'Solo los postulantes pueden aplicar a ofertas.')
+        return redirect('index')
+        
+    oferta = get_object_or_404(Oferta, id=oferta_id)
+    postulacion, created = Postulacion.objects.get_or_create(postulante=request.user.profile, oferta=oferta)
+    
+    if created:
+        messages.success(request, f'¡Has postulado exitosamente a {oferta.titulo}!')
+    else:
+        messages.info(request, 'Ya habías postulado a esta oferta anteriormente.')
+        
+    return redirect('index')
 
 

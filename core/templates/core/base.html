@@ -21,7 +21,9 @@
             <!-- Django backend authentication handling navigation -->
             <div class="nav-links">
                 <a href="{% url 'index' %}">Inicio</a>
+                {% if not user.is_authenticated or user.profile.role != 'empresa' %}
                 <a href="{% url 'buscar_empleos' %}">Buscar empleos</a>
+                {% endif %}
                 <a href="{% url 'dashboard' %}">Mi Tablero</a>
                 <div class="nav-auth-links" style="margin-left: 1rem; display: flex; align-items: center; gap: 1rem;">
                     {% if user.is_authenticated %}

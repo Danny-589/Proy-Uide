@@ -85,3 +85,14 @@ class ClasificacionCandidato(models.Model):
 
     def __str__(self):
         return f"{self.empresa.empresa_nombre} -> {self.postulante.user.username} ({self.estado})"
+
+class Postulacion(models.Model):
+    postulante = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='postulaciones')
+    oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE, related_name='aplicaciones')
+    fecha_postulacion = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('postulante', 'oferta')
+
+    def __str__(self):
+        return f"{self.postulante.user.username} aplica a {self.oferta.titulo}"

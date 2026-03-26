@@ -309,6 +309,102 @@ body { background-color: var(--bg-main); }
 
 <div class="dashboard-layout">
     
+    {% if request.user.profile.role == 'empresa' %}
+    <!-- ==============================================
+         VISTA OFERTANTE (Employer Dashboard)
+         ============================================== -->
+    <div id="dashboardEmpresa" class="dashboard-empresa-container" style="margin-top:0;">
+        <div class="dashboard-header-post">
+            <div class="dashboard-title-post">
+                <h2>Resumen de actividad (Ofertante)</h2>
+                <p>Bienvenido de nuevo. Aquí tienes un resumen de tus procesos de selección y candidatos.</p>
+            </div>
+            <div>
+                <a href="{% url 'editar_perfil' %}" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem; font-size:1rem; padding:0.75rem 1.5rem; text-decoration:none;">
+                    ✎ Editar Empresa
+                </a>
+            </div>
+        </div>
+
+        <div class="stats-grid-post">
+            <div class="stat-card-post">
+                <div class="stat-trend neutral">Activos</div>
+                <div class="stat-icon-post" style="background:#eff6ff; color:#3b82f6;">📥</div>
+                <div class="stat-label-post">Postulantes Pendientes</div>
+                <div class="stat-value-post">{{ stats_empresa.pendientes }}</div>
+            </div>
+            <div class="stat-card-post">
+                <div class="stat-trend up">En proceso</div>
+                <div class="stat-icon-post" style="background:#f3e8ff; color:#a855f7;">🤝</div>
+                <div class="stat-label-post">Entrevistas</div>
+                <div class="stat-value-post">{{ stats_empresa.entrevistas }}</div>
+            </div>
+            <div class="stat-card-post">
+                <div class="stat-trend up">Aprobados</div>
+                <div class="stat-icon-post" style="background:#ecfdf5; color:#10b981;">✅</div>
+                <div class="stat-label-post">Cumplen Requisitos</div>
+                <div class="stat-value-post">{{ stats_empresa.cumplen }}</div>
+            </div>
+            <div class="stat-card-post">
+                <a href="{% url 'index' %}" class="stat-trend" style="color:var(--primary-color); text-decoration:none;">Ir a Kanban</a>
+                <div class="stat-icon-post" style="background:#fffbeb; color:#f59e0b;">📊</div>
+                <div class="stat-label-post">Gestión Completa</div>
+                <div class="stat-value-post">Total</div>
+            </div>
+        </div>
+
+        <div class="main-grid-post">
+            <div class="main-content-left">
+                <div class="section-header-post">
+                    <h3>👥 Postulantes Pendientes</h3>
+                    <a href="{% url 'index' %}">Ver en Tablero Kanban →</a>
+                </div>
+                
+                <div class="jobs-rec-list" style="display:flex; flex-direction:column; gap:1rem;">
+                    {% for p in postulantes_pendientes %}
+                    <div class="job-card-rec">
+                        <div class="job-logo-rec">
+                            {% if p.foto %}
+                                <img src="{{ p.foto.url }}" alt="Foto" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                            {% else %}
+                                <span style="font-size: 1.5rem;">👤</span>
+                            {% endif %}
+                        </div>
+                        <div class="job-info-rec">
+                            <div class="job-title-row">
+                                <h4>{{ p.nombre_visualizacion }}</h4>
+                            </div>
+                            <div class="job-meta-rec">{{ p.cargo_titulo|default:"Sin cargo especificado" }}</div>
+                            <div class="job-tags-rec">
+                                {% if p.hoja_de_vida %}
+                                <a href="{{ p.hoja_de_vida.url }}" target="_blank" class="tag-rec" style="background:#e0e7ff; color:#4338ca; text-decoration:none;">📄 Ver CV</a>
+                                {% endif %}
+                                <a href="{% url 'perfil' %}?id={{ p.id }}" target="_blank" class="tag-rec" style="background:#dcfce3; color:#166534; text-decoration:none;">👁 Ver Perfil</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="text-align:center; padding:3rem; background:white; border-radius:1rem; border:1px dashed var(--border-color);">
+                        <p style="color:var(--text-muted); margin: 0;">No tienes candidatos pendientes por revisar.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="main-content-right">
+                <div class="side-card white">
+                    <h4 style="margin-bottom:1.5rem;">Acciones Rápidas</h4>
+                    <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-full mt-2" style="font-size:1rem; padding:0.875rem; text-align:center; display:block; text-decoration:none; margin-bottom:1rem;">
+                        + Publicar vacantes (Editar Perfil)
+                    </a>
+                    <a href="{% url 'index' %}" class="btn btn-outline w-full mt-2" style="font-size:1rem; padding:0.875rem; text-align:center; display:block; text-decoration:none;">
+                        📊 Abrir Tablero Kanban
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
     <!-- ==============================================
          VISTA POSTULANTE (Job Seeker Dashboard)
          ============================================== -->
@@ -316,12 +412,12 @@ body { background-color: var(--bg-main); }
         <div class="dashboard-header-post">
             <div class="dashboard-title-post">
                 <h2 id="dashTitlePost">Resumen de actividad</h2>
-                <p>Bienvenido de nuevo, Juan. Tienes 3 nuevas ofertas que coinciden con tu perfil.</p>
+                <p>Bienvenido de nuevo. Estas son tus notificaciones más recientes.</p>
             </div>
             <div>
-                <button class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem; font-size:1rem; padding:0.75rem 1.5rem;">
+                <a href="{% url 'editar_perfil' %}" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem; font-size:1rem; padding:0.75rem 1.5rem; text-decoration:none;">
                     ✎ Editar Perfil
-                </button>
+                </a>
             </div>
         </div>
 
@@ -342,7 +438,7 @@ body { background-color: var(--bg-main); }
                 <div class="stat-trend neutral">Sin cambios</div>
                 <div class="stat-icon-post" style="background:#fffbeb; color:#f59e0b;">📅</div>
                 <div class="stat-label-post">Entrevistas</div>
-                <div class="stat-value-post">2</div>
+                <div class="stat-value-post">0</div>
             </div>
             <div class="stat-card-post">
                 <a href="#" class="stat-trend" style="color:var(--primary-color);">Ver guardados</a>
@@ -356,11 +452,13 @@ body { background-color: var(--bg-main); }
             <div class="main-content-left">
                 <div class="section-header-post">
                     <h3>Empleos recomendados</h3>
-                    <a href="#">Ver todos</a>
+                    <a href="{% url 'index' %}">Buscar empleos →</a>
                 </div>
                 
                 <div class="jobs-rec-list" id="recommendedJobsList">
-                    <!-- DOM elements will be inserted here by Javascript -->
+                    <div style="text-align:center; padding:3rem; background:white; border-radius:1rem; border:1px dashed var(--border-color);">
+                        <p style="color:var(--text-muted); margin: 0;">Pronto verás empleos aquí. <br><a href="{% url 'index' %}">Ir al portal de búsqueda</a></p>
+                    </div>
                 </div>
             </div>
 
@@ -368,67 +466,32 @@ body { background-color: var(--bg-main); }
                 <!-- Búsqueda rápida -->
                 <div class="side-card">
                     <h4><span style="color:var(--primary-color);">⚡</span> Búsqueda rápida</h4>
-                    <input type="text" placeholder="🔍 Cargo o empresa...">
-                    <input type="text" placeholder="📍 Loja, Ecuador">
-                    <button class="btn btn-primary w-full mt-2" style="font-size:1rem; padding:0.875rem;">Buscar ahora</button>
+                    <form action="{% url 'index' %}" method="GET">
+                        <input type="text" name="q" placeholder="🔍 Cargo o empresa...">
+                        <input type="text" name="u" placeholder="📍 Loja, Ecuador">
+                        <button type="submit" class="btn btn-primary w-full mt-2" style="font-size:1rem; padding:0.875rem;">Buscar ahora</button>
+                    </form>
                 </div>
 
                 <!-- Fortaleza del perfil -->
                 <div class="side-card white">
                     <h4 style="margin-bottom:1.5rem;">Fortaleza del perfil</h4>
                     <div class="progress-labels">
-                        <span style="color:var(--text-muted); font-weight:500;">Intermedio</span>
-                        <span style="color:var(--primary-color);">75%</span>
+                        <span style="color:var(--text-muted); font-weight:500;">Básico</span>
+                        <span style="color:var(--primary-color);">50%</span>
                     </div>
                     <div class="progress-container">
-                        <div class="progress-bar" style="width: 75%;"></div>
+                        <div class="progress-bar" style="width: 50%;"></div>
                     </div>
                     <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; margin-bottom:1rem;">
-                        Completa tu experiencia laboral para aumentar tus posibilidades de ser contratado.
+                        Vuelve a la configuración de Perfil para que los reclutadores sepan más de ti.
                     </p>
-                    <a href="#" style="color:var(--primary-color); font-weight:600; font-size:0.875rem;">Completar perfil →</a>
-                </div>
-
-                <!-- Estado de postulaciones -->
-                <div class="side-card white">
-                    <h4 style="margin-bottom:1.5rem;">Estado de postulaciones</h4>
-                    <div class="timeline" id="postulacionesTimeline">
-                        <!-- JS injects timeline items here -->
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ==============================================
-         VISTA OFERTANTE (Employer Dashboard from previous design - retained for logic)
-         Nota para el developer: Puedes ocular el que no corresponda con Javascript o render del servidor (display: none;)
-         ============================================== -->
-    <div id="dashboardEmpresa" class="dashboard-empresa-container" style="display:none;">
-        <hr style="border:0; border-top:2px dashed #e2e8f0; margin-bottom:4rem;">
-        <div class="dashboard-header-modern">
-            <div class="dashboard-title-area">
-                <h2 id="dashTitle">Mi Panel de Control (Ofertante)</h2>
-                <p>Bienvenido de nuevo. Gestiona tus ofertas y postulaciones aquí.</p>
-            </div>
-            <div id="dashActions" class="dashboard-actions">
-                <!-- Botones inyectados por JS -->
-            </div>
-        </div>
-        <div class="dashboard-main-grid">
-            <div class="dash-card" id="myJobsSection">
-                <div class="dash-card-header" style="border-bottom:1px solid var(--border-color); padding:1.5rem;">
-                    <h3 class="dash-card-title" id="sectionTitle">Mis Publicaciones</h3>
-                </div>
-                <div class="dash-card-body" style="padding:1.5rem;">
-                    <div id="myJobList" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <!-- JS injects here -->
-                    </div>
+                    <a href="{% url 'editar_perfil' %}" style="color:var(--primary-color); font-weight:600; font-size:0.875rem;">Completar perfil →</a>
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
 
 </div>
 
