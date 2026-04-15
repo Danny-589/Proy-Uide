@@ -13,6 +13,7 @@ urlpatterns = [
     path('perfil/editar/', views.editar_perfil, name='editar_perfil'),
     path('perfil/eliminar-cv/', views.eliminar_cv, name='eliminar_cv'),
     path('perfil/crear-oferta/', views.crear_oferta, name='crear_oferta'),
+    path('oferta/editar/<int:oferta_id>/', views.editar_oferta, name='editar_oferta'),
     path('oferta/eliminar/<int:oferta_id>/', views.eliminar_oferta, name='eliminar_oferta'),
     path('oferta/aplicar/<int:oferta_id>/', views.aplicar_oferta, name='aplicar_oferta'),
     path('api/candidato/estado/', views.actualizar_estado_candidato, name='actualizar_estado_candidato'),

@@ -150,7 +150,11 @@ def buscar_empleos(request):
 
 @login_required
 def perfil(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    profile_id = request.GET.get('id')
+    if profile_id:
+        profile = get_object_or_404(Profile, id=profile_id)
+    else:
+        profile, created = Profile.objects.get_or_create(user=request.user)
     return render(request, 'core/perfil.html', {'profile': profile})
 
 @login_required
@@ -215,6 +219,26 @@ def crear_oferta(request):
         form = OfertaForm()
         
     return render(request, 'core/crear_oferta.html', {'form': form})
+
+@login_required
+def editar_oferta(request, oferta_id):
+    profile = getattr(request.user, 'profile', None)
+    if not profile or profile.role != 'empresa':
+        messages.error(request, 'No tienes permiso para editar ofertas.')
+        return redirect('dashboard')
+        
+    oferta = get_object_or_404(Oferta, id=oferta_id, empresa=profile)
+    
+    if request.method == 'POST':
+        form = OfertaForm(request.POST, instance=oferta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '¡Vacante actualizada exitosamente!')
+            return redirect('editar_perfil')
+    else:
+        form = OfertaForm(instance=oferta)
+        
+    return render(request, 'core/editar_oferta.html', {'form': form, 'oferta': oferta})
 
 @login_required
 def eliminar_oferta(request, oferta_id):

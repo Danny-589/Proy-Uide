@@ -166,41 +166,6 @@
     .change-logo-text { font-size: 0.75rem; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; margin-top: 0.5rem; text-align: center; cursor: pointer;}
     .logo-right-fields { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;}
 
-    /* Offers Section fake */
-    .section-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 2rem 0 1rem 0;
-    }
-    .section-title h3 { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); margin: 0; }
-    .section-title a { font-size: 0.875rem; color: var(--primary-blue); text-decoration: none; font-weight: 600; }
-    
-    .offers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-    .offer-card { border: 1px solid var(--border-light); border-radius: 0.75rem; padding: 1rem; background: white; }
-    .offer-badge { background: #dcfce7; color: #166534; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 1rem; text-transform: uppercase; }
-    .offer-time { font-size: 0.75rem; color: var(--text-gray); float: right; }
-    .offer-title { font-weight: 700; color: var(--text-dark); margin: 0.75rem 0 0.25rem 0; }
-    .offer-desc { font-size: 0.85rem; color: var(--text-gray); margin-bottom: 0.75rem; }
-    .offer-stats { font-size: 0.85rem; color: var(--text-dark); font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
-    
-    .btn-dashed {
-        width: 100%;
-        padding: 1rem;
-        border: 2px dashed #cbd5e1;
-        border-radius: 0.75rem;
-        background: transparent;
-        color: var(--text-dark);
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-    }
-    .btn-dashed:hover { border-color: var(--primary-blue); color: var(--primary-blue); background: var(--primary-blue-light); }
-
     /* Social Links */
     .social-links { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
     .social-pill {
@@ -380,53 +345,6 @@
 
                     </div>
 
-                    <!-- Ofertas Publicadas (Dynamic) -->
-                    <div class="section-title">
-                        <h3>Ofertas Publicadas</h3>
-                        {% if ofertas %}
-                            <span style="font-size: 0.85rem; color: var(--text-gray); font-weight: 600;">{{ ofertas|length }} Registradas</span>
-                        {% endif %}
-                    </div>
-                    
-                    {% if ofertas %}
-                        <div class="offers-grid">
-                            {% for oferta in ofertas|slice:":4" %}
-                            <div class="offer-card">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                                    {% if oferta.estado %}
-                                        <span class="offer-badge" style="background: #dcfce7; color: #166534;">Activa</span>
-                                    {% else %}
-                                        <span class="offer-badge" style="background: #f1f5f9; color: #64748b;">Inactiva</span>
-                                    {% endif %}
-                                    <div style="display: flex; gap: 0.75rem; align-items: center;">
-                                        <span class="offer-time" style="float: none;">{{ oferta.fecha_publicacion|timesince }}</span>
-                                        <button type="submit" formnovalidate formaction="{% url 'eliminar_oferta' oferta.id %}" onclick="return confirm('¿Seguro que deseas eliminar esta oferta?');" style="background: none; border: none; padding: 0; cursor: pointer; color: var(--danger-color); font-size: 1.1rem; line-height: 1; opacity: 0.7; transition: opacity 0.2s; margin: 0; display: inline-flex;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Eliminar vacante">🗑️</button>
-                                    </div>
-                                </div>
-                                <h4 class="offer-title">{{ oferta.titulo }}</h4>
-                                <p class="offer-desc">{{ oferta.get_modalidad_display }} • {{ oferta.get_tipo_contrato_display }}</p>
-                                <div class="offer-stats">
-                                    📍 {{ oferta.ubicacion|default:"No especificada" }}
-                                    {% if oferta.sueldo %}
-                                        &nbsp;• 💵 {{ oferta.sueldo }}
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div style="background: white; border: 1px dashed #cbd5e1; border-radius: 0.75rem; padding: 2.5rem; text-align: center; margin-bottom: 1rem;">
-                            <div style="font-size: 2.5rem; margin-bottom: 0.5rem; filter: grayscale(1); opacity: 0.5;">📁</div>
-                            <h4 style="margin: 0 0 0.25rem 0; color: var(--text-dark);">Aún no tienes ofertas</h4>
-                            <p style="margin: 0; font-size: 0.85rem; color: var(--text-gray);">Publica tu primera vacante para empezar a recibir talento.</p>
-                        </div>
-                    {% endif %}
-                    
-                    <a href="{% url 'crear_oferta' %}" style="text-decoration: none; display: block; width: 100%;">
-                        <button type="button" class="btn-dashed">
-                            <span>➕</span> Crear Nueva Vacante
-                        </button>
-                    </a>
 
                     <!-- Social Links Inputs wrapped as pills -->
                     <div class="social-links">
