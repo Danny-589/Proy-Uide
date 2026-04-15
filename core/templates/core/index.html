@@ -269,6 +269,8 @@
                 <div class="job-icon" style="overflow: hidden; background: white;">
                     {% if app.oferta.empresa.empresa_logo %}
                         <img src="{{ app.oferta.empresa.empresa_logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
+                    {% elif app.oferta.empresa.foto_perfil %}
+                        <img src="{{ app.oferta.empresa.foto_perfil.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
                     {% else %}
                         <span style="font-weight: 800; color: var(--primary-color);">{{ app.oferta.empresa.empresa_nombre|make_list|first|default:"E" }}</span>
                     {% endif %}
@@ -302,6 +304,8 @@
                 <div class="job-icon" style="overflow: hidden; background: white;">
                     {% if oferta.empresa.empresa_logo %}
                         <img src="{{ oferta.empresa.empresa_logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
+                    {% elif oferta.empresa.foto_perfil %}
+                        <img src="{{ oferta.empresa.foto_perfil.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
                     {% else %}
                         <span style="font-weight: 800; color: var(--primary-color);">{{ oferta.empresa.empresa_nombre|make_list|first|default:"E" }}</span>
                     {% endif %}

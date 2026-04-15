@@ -73,10 +73,9 @@ def registro(request):
         else:
             user = User.objects.create_user(username=email, email=email, password=password)
             Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
-            user = authenticate(username=email, password=password)
-            if user:
-                auth_login(request, user)
-                return redirect('dashboard')
+            # Iniciar sesión automáticamente
+            auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect('dashboard')
     
     return render(request, 'core/registro.html')
 

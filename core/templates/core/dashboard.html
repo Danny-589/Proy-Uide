@@ -364,8 +364,8 @@ body { background-color: var(--bg-main); }
                     {% for p in postulantes_pendientes %}
                     <div class="job-card-rec">
                         <div class="job-logo-rec">
-                            {% if p.foto %}
-                                <img src="{{ p.foto.url }}" alt="Foto" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                            {% if p.foto_perfil %}
+                                <img src="{{ p.foto_perfil.url }}" alt="Foto" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
                             {% else %}
                                 <span style="font-size: 1.5rem;">👤</span>
                             {% endif %}

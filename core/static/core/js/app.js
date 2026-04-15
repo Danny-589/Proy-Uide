@@ -1,83 +1,26 @@
 // core/static/core/js/app.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Navbar dinámico
-    const navLinks = document.getElementById('navLinks');
-    const user = Auth.getSession();
-
-    if (user) {
-        navLinks.innerHTML = `
-            <a href="/">Inicio</a>
-            <a href="/buscar_empleos/">Buscar empleos</a>
-            <span style="margin-left:auto; margin-right: 15px; color:var(--text-muted);">Hola, ${user.nombre}</span>
-            <div class="nav-auth-links">
-                <a href="/dashboard/" class="btn btn-primary" style="padding:0.5rem 1rem;">Mi Panel</a>
-                <a href="#" id="logoutBtn" class="btn btn-ghost" style="color:var(--error-color); padding:0.5rem 1rem;">Salir</a>
-            </div>
-        `;
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            Auth.logout();
-        });
-    } else {
-        navLinks.innerHTML = `
-            <a href="/">Inicio</a>
-            <a href="/buscar_empleos/">Buscar empleos</a>
-            <a href="/registro/">Publicar empleo</a>
-            <div class="nav-auth-links" style="margin-left:auto;">
-                <a href="/login/" class="btn btn-ghost" style="padding:0.5rem 1rem;">Iniciar sesión</a>
-                <a href="/registro/" class="btn btn-primary" style="padding:0.5rem 1rem;">Registro</a>
-            </div>
-        `;
-    }
+    // 1. Navbar dinámico (Removido porque Django templates maneja la autenticación y navbar)
 
     const path = window.location.pathname;
 
-    // 2. Lógica de Registro (/registro/)
+    // 2. Lógica de Registro (/registro/) - Manejado por Django Backend
     if (path === '/registro/') {
         const regForm = document.getElementById('registerForm');
-        
         regForm?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const rol = document.getElementById('regRole').value;
-            const nombre = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
-
             if (password.length < 6) {
+                e.preventDefault();
                 alert('La contraseña debe tener al menos 6 caracteres.');
-                return;
             }
-
-            const res = Auth.registrar({ rol, nombre, email, password });
-            
-            if (res.error) {
-                document.getElementById('registerError').textContent = res.error;
-                document.getElementById('registerError').style.display = 'block';
-            } else {
-                window.location.href = '/dashboard/';
-            }
+            // Dejar que el backend maneje el resto
         });
     }
 
-    // 3. Lógica de Login (/login/)
+    // 3. Lógica de Login (/login/) - Manejado por Django Backend
     if (path === '/login/') {
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-
-        loginForm?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const res = Auth.login(email, password);
-            if (res.error) {
-                loginError.textContent = res.error;
-                loginError.style.display = 'block';
-            } else {
-                window.location.href = '/dashboard/';
-            }
-        });
+        // Formulario manejado completamente por el backend
     }
 
     // 4. Lógica de Index (Inicio) y Buscar Empleos

@@ -1,8 +1,8 @@
 <div class="kanban-card" draggable="true" data-id="{{ p.id }}" data-current-status="{{ p.estado_actual }}">
     <div class="card-header">
         <div class="card-avatar">
-            {% if p.foto %}
-                <img src="{{ p.foto.url }}" alt="{{ p.nombre_visualizacion }}">
+            {% if p.foto_perfil %}
+                <img src="{{ p.foto_perfil.url }}" alt="{{ p.nombre_visualizacion }}">
             {% else %}
                 {{ p.nombre_visualizacion|make_list|first|upper }}
             {% endif %}
