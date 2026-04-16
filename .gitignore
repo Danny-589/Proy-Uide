@@ -27,3 +27,7 @@ venv.bak/
 # Logs and databases
 *.log
 *.sqlite3
+
+# Environment variables
+.env
+.env.*
