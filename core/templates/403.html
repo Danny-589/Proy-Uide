@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso denegado – Loja Empleo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fff9db 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1.5rem;
+        }
+        .overlay {
+            position: fixed; inset: 0;
+            background: rgba(255,255,255,0.45);
+            backdrop-filter: blur(4px);
+            z-index: 0;
+        }
+        .error-card {
+            position: relative; z-index: 1;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(245,158,11,0.2);
+            border-radius: 24px;
+            box-shadow: 0 24px 64px rgba(245,158,11,0.10), 0 4px 16px rgba(0,0,0,0.08);
+            padding: 3rem 2.5rem;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            animation: cardIn 0.45s cubic-bezier(.22,.68,0,1.2) both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+        .error-code {
+            font-size: 6rem; font-weight: 800;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1; margin-bottom: 0.5rem;
+        }
+        .error-icon {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, #fef3f2, #fee4e2);
+            border: 2px solid #fecdca;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .error-icon svg { width: 36px; height: 36px; stroke: #ef4444; }
+        h1 { font-size: 1.5rem; font-weight: 700; color: #111827; margin-bottom: 0.75rem; }
+        p  { font-size: 0.975rem; color: #6b7280; line-height: 1.6; margin-bottom: 2rem; }
+        .btn-group { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.65rem 1.4rem;
+            border-radius: 10px;
+            font-size: 0.9rem; font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white; border: none;
+            box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.45); }
+        .btn-ghost {
+            background: transparent; color: #6b7280;
+            border: 1.5px solid #e5e7eb;
+        }
+        .btn-ghost:hover { background: #f9fafb; border-color: #d1d5db; color: #374151; }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="error-card" role="dialog" aria-labelledby="error-title">
+        <div class="error-icon">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+        </div>
+        <div class="error-code">403</div>
+        <h1 id="error-title">Acceso denegado</h1>
+        <p>No tienes permiso para acceder a esta sección. Si crees que es un error, intenta iniciar sesión con una cuenta con el acceso correcto.</p>
+        <div class="btn-group">
+            <a href="/" class="btn btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10h4v-6h6v6h4V10"/>
+                </svg>
+                Ir al inicio
+            </a>
+            <a href="/login/" class="btn btn-ghost">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+                Iniciar sesión
+            </a>
+        </div>
+    </div>
+</body>
+</html>

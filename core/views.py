@@ -87,24 +87,36 @@ def registro(request):
     return render(request, 'core/registro.html')
 
 def user_login(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+    # Si ya está autenticado, ir directo al dashboard
+    if request.user.is_authenticated:
+        return redirect('dashboard')
 
-        # Buscar el usuario por email para obtener su username real
-        try:
-            user_obj = User.objects.get(email=email)
+    next_url = request.GET.get('next', '')
+
+    # Si viene de @login_required (?next=...), mostrar aviso como toast
+    if request.method == 'GET' and next_url:
+        messages.warning(request, 'Debes iniciar sesión para acceder a esa sección.')
+
+    if request.method == 'POST':
+        email    = request.POST.get('email')
+        password = request.POST.get('password')
+        next_url = request.POST.get('next', '')
+
+        # Buscar el usuario por email (filter evita crash si hay emails duplicados)
+        user_obj = User.objects.filter(email=email).first()
+        if user_obj:
             user = authenticate(request, username=user_obj.username, password=password)
-        except User.DoesNotExist:
+        else:
             user = None
 
         if user is not None:
             auth_login(request, user)
-            return redirect('dashboard')
+            # Redirigir a la página original si venía de @login_required
+            return redirect(next_url) if next_url else redirect('dashboard')
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
-            
-    return render(request, 'core/login.html')
+
+    return render(request, 'core/login.html', {'next': next_url})
 
 def user_logout(request):
     auth_logout(request)
@@ -313,3 +325,18 @@ def aplicar_oferta(request, oferta_id):
     return redirect('index')
 
 
+# ── Manejadores de errores HTTP personalizados ──
+def error_404(request, exception=None):
+    """Página 404 personalizada con ventana flotante."""
+    from django.shortcuts import render as _render
+    return _render(request, '404.html', status=404)
+
+def error_500(request):
+    """Página 500 personalizada con ventana flotante."""
+    from django.shortcuts import render as _render
+    return _render(request, '500.html', status=500)
+
+def error_403(request, exception=None):
+    """Página 403 personalizada con ventana flotante."""
+    from django.shortcuts import render as _render
+    return _render(request, '403.html', status=403)

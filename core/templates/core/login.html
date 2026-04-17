@@ -44,6 +44,9 @@ body { background-color: #f8fafc; }
         
         <form id="loginForm" method="POST" action="{% url 'login' %}">
             {% csrf_token %}
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
             <div class="form-group">
                 <label for="loginEmail">Correo electrónico</label>
                 <div style="position: relative;">

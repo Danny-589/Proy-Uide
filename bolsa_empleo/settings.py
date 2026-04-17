@@ -49,7 +49,7 @@ ROOT_URLCONF = 'bolsa_empleo.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'core' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,3 +135,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'media')
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Redirige @login_required a nuestro login personalizado
+LOGIN_URL = '/login/'
