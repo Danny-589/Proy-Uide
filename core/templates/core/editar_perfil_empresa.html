@@ -300,6 +300,13 @@
 
                         <div class="form-grid-inner">
                             <div>
+                                <label class="form-label">Teléfono Directo</label>
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">📞</span>
+                                    {{ profile_form.telefono }}
+                                </div>
+                            </div>
+                            <div>
                                 <label class="form-label">Sitio Web</label>
                                 <div style="position: relative;">
                                     <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">🌐</span>
@@ -366,66 +373,7 @@
                 <div class="right-col">
                     
                     <!-- Recruiter Contact -->
-                    <div class="card" style="margin-bottom: 1.5rem;">
-                        <div class="form-label" style="text-transform: none; font-size: 1.1rem; color: var(--text-dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
-                            <span style="color: var(--primary-blue);">👤</span> Contacto del Reclutador
-                        </div>
-                        
-                        <div class="recruiter-header">
-                            <div style="position: relative; overflow: visible; display: inline-block;">
-                                {% if profile_form.instance.foto_perfil %}
-                                    <img src="{{ profile_form.instance.foto_perfil.url }}" alt="Avatar" class="recruiter-avatar" id="avatarPreview">
-                                {% else %}
-                                    <div class="recruiter-avatar-placeholder" id="avatarPreviewAlt">{{ user.username|make_list|first|upper }}</div>
-                                    <img src="" alt="Avatar" class="recruiter-avatar" id="avatarPreview" style="display:none;">
-                                {% endif %}
-                                <div style="position: absolute; bottom: 0.5rem; right: -0.5rem; background: var(--border-light); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; z-index: 10;" onclick="document.getElementById('foto_perfil_input').click()">
-                                    📷
-                                </div>
-                                {{ profile_form.foto_perfil }}
-                            </div>
-                            
-                            <!-- We render normal inputs but styled minimally or we can use normal form-controls since it's an edit page -->
-                            <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
-                                {{ profile_form.nombre_visualizacion }}
-                                {{ profile_form.cargo_titulo }}
-                            </div>
-                            <!-- Inline style adjust for these two -->
-                            <style>
-                                #id_nombre_visualizacion { text-align: center; font-weight: 800; font-size: 1.1rem; border: none; background: transparent; padding: 0; box-shadow: none;}
-                                #id_nombre_visualizacion:focus { background: var(--bg-input); border-radius: 4px; padding: 0.2rem;}
-                                #id_cargo_titulo { text-align: center; font-size: 0.85rem; color: var(--text-gray); border: none; background: transparent; padding: 0; box-shadow: none; margin-top: -0.25rem;}
-                                #id_cargo_titulo:focus { background: var(--bg-input); border-radius: 4px; padding: 0.2rem;}
-                            </style>
-                        </div>
-                        
-                        <div style="margin-bottom: 1rem;">
-                            <label class="form-label">Nombre de Usuario</label>
-                            <div style="position: relative;">
-                                <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">👤</span>
-                                {{ user_form.username }}
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 1rem;">
-                            <label class="form-label">Email Corporativo</label>
-                            <div style="position: relative;">
-                                <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">✉️</span>
-                                {{ user_form.email }}
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="form-label">Teléfono Directo</label>
-                            <div style="position: relative;">
-                                <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">📞</span>
-                                {{ profile_form.telefono }}
-                            </div>
-                        </div>
-                        <style>#id_username, #id_email, #id_telefono { padding-left: 2.5rem; }</style>
-
-                        <a href="#" class="edit-link" onclick="document.getElementById('id_nombre_visualizacion').focus(); return false;">✎ Editar Información</a>
-                    </div>
+                    <!-- Removed Recruiter Contact Card (Moved to Configuración) -->
                     
                     <!-- Map Card -->
                     <div class="card map-card">

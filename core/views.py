@@ -522,7 +522,6 @@ def eliminar_resena(request, resena_id):
 def editar_perfil(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     
-    # Seleccionar formulario y plantilla base según el rol
     if profile.role == 'empresa':
         ProfileFormClass = EmpresaProfileEditForm
         template_name = 'core/editar_perfil_empresa.html'
@@ -533,13 +532,22 @@ def editar_perfil(request):
         ofertas = None
 
     if request.method == 'POST':
-        user_form = UserEditForm(request.POST, instance=request.user)
+        # Solo guardamos profile_form
         profile_form = ProfileFormClass(request.POST, request.FILES, instance=profile)
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            messages.success(request, 'Perfil actualizado exitosamente.')
-            return redirect('perfil')
+        
+        # Para compatibilidad si todavia hay forms enviando user_form
+        user_form = UserEditForm(request.POST, instance=request.user)
+        if request.POST.get('username') or request.POST.get('email'):
+            if user_form.is_valid() and profile_form.is_valid():
+                user_form.save()
+                profile_form.save()
+                messages.success(request, 'Perfil actualizado exitosamente.')
+                return redirect('perfil')
+        else:
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Perfil corporativo actualizado exitosamente.')
+                return redirect('perfil')
     else:
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileFormClass(instance=profile)
@@ -548,6 +556,37 @@ def editar_perfil(request):
         'user_form': user_form,
         'profile_form': profile_form,
         'ofertas': ofertas
+    })
+
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from .forms import UserEditForm
+
+@login_required
+def configuracion_privacidad(request):
+    if request.method == 'POST':
+        if 'user_update' in request.POST:
+            user_form = UserEditForm(request.POST, instance=request.user)
+            password_form = PasswordChangeForm(request.user)
+            if user_form.is_valid():
+                user_form.save()
+                messages.success(request, 'Información de cuenta actualizada.')
+                return redirect('configuracion')
+        elif 'password_update' in request.POST:
+            user_form = UserEditForm(instance=request.user)
+            password_form = PasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Contraseña actualizada exitosamente.')
+                return redirect('configuracion')
+    else:
+        user_form = UserEditForm(instance=request.user)
+        password_form = PasswordChangeForm(request.user)
+        
+    return render(request, 'core/configuracion.html', {
+        'user_form': user_form,
+        'password_form': password_form,
     })
 
 @login_required
