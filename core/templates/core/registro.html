@@ -2,7 +2,7 @@
 
 {% block content %}
 <style>
-body { background-color: #f8fafc; }
+body { background-color: var(--bg-main); }
 .auth-wrapper {
     display: flex;
     justify-content: center;
@@ -10,7 +10,7 @@ body { background-color: #f8fafc; }
     padding: 4rem 1rem;
 }
 .auth-card {
-    background: white;
+    background: var(--bg-card);
     padding: 3rem 2.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
@@ -50,12 +50,12 @@ body { background-color: #f8fafc; }
     font-size: 0.875rem;
 }
 .role-option:hover {
-    border-color: #bfdbfe;
-    background-color: #eff6ff;
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
 }
 .role-option.active {
     border-color: var(--primary-color);
-    background-color: #eff6ff;
+    background-color: var(--primary-light);
     color: var(--primary-color);
 }
 .role-icon {

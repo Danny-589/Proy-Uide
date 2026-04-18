@@ -231,7 +231,7 @@
     </div>
     <div class="job-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 3rem;">
         {% for app in mis_postulaciones %}
-        <div class="job-card" style="border-color: var(--primary-color); background: #f8fafc;">
+        <div class="job-card" style="border-color: var(--primary-color); background: var(--bg-card);">
             <div class="job-icon-header">
                 <div class="job-icon" style="overflow: hidden; background: var(--bg-card);">
                     {% if app.oferta.empresa.empresa_logo %}
@@ -284,7 +284,7 @@
             <div class="job-details" style="flex-wrap: wrap;">
                 <span>📍 {{ oferta.ubicacion|default:"No especificada" }}</span>
                 <span>💼 {{ oferta.get_modalidad_display }}</span>
-                <span style="background:#f3e8ff; color:#7c3aed; padding:0.2rem 0.6rem; border-radius:999px; font-size:0.75rem; font-weight:600;">🏷️ {{ oferta.get_etiqueta_display }}</span>
+                <span style="background:rgba(124,58,237,0.15); color:#a78bfa; padding:0.2rem 0.6rem; border-radius:999px; font-size:0.75rem; font-weight:600;">🏷️ {{ oferta.get_etiqueta_display }}</span>
                 {% if oferta.sueldo %}
                     <span style="color: var(--primary-color); font-weight: 600;">💵 {{ oferta.sueldo }}</span>
                 {% endif %}
@@ -293,7 +293,7 @@
             <a href="{% url 'detalle_oferta' oferta.id %}" class="btn btn-primary" style="width: 100%; font-weight: 600; text-align: center; display: block; text-decoration: none;">Ver Detalles →</a>
         </div>
         {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: white; border-radius: 1rem; border: 1px dashed #cbd5e1;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: var(--bg-card); border-radius: 1rem; border: 1px dashed var(--border-color);">
             <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;">🔍</div>
             <h3 style="color: var(--text-main); margin-bottom: 0.5rem; font-size: 1.5rem;">Aún no hay ofertas publicadas</h3>
             <p style="color: var(--text-muted); font-size: 1.1rem;">Pronto las empresas comenzarán a publicar sus vacantes aquí.</p>

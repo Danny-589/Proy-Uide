@@ -100,7 +100,7 @@
     }
 
     .btn-preview:hover {
-        background: #f8fafc;
+        background: var(--bg-main);
     }
 
     .btn-save {
@@ -194,12 +194,12 @@
         width: 100%;
         height: 100%;
         border-radius: 50%;
-        background: #e2e8f0;
+        background: var(--border-color);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 3rem;
-        color: #94a3b8;
+        color: var(--text-muted);
         font-weight: bold;
     }
 
@@ -290,19 +290,19 @@
 
     /* Upload CV Card */
     .upload-box {
-        border: 2px dashed #cbd5e1;
+        border: 2px dashed var(--border-color);
         border-radius: 0.75rem;
         padding: 2rem 1rem;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
-        background: #f8fafc;
+        background: var(--bg-main);
         position: relative;
     }
 
     .upload-box:hover {
         border-color: var(--primary-blue);
-        background: #eff6ff;
+        background: var(--primary-light);
     }
 
     .upload-icon {
@@ -337,10 +337,10 @@
         align-items: center;
         justify-content: space-between;
         padding: 1rem;
-        background: #f1f5f9;
+        background: var(--bg-main);
         border-radius: 0.5rem;
         margin-top: 1rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
     }
 
     .file-name-display {
@@ -387,7 +387,7 @@
     .form-control:focus {
         outline: none;
         border-color: var(--primary-blue);
-        background-color: white;
+        background-color: var(--bg-input);
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
@@ -530,9 +530,9 @@
                                 <div class="file-name-display" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 1rem;" title="{{ profile_form.instance.hoja_de_vida.name }}">{{ profile_form.instance.hoja_de_vida.name|title }}</div>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                                     <a href="{{ profile_form.instance.hoja_de_vida.url }}" target="_blank"
-                                        style="color:var(--text-gray); text-decoration:none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 4px; background: #e2e8f0; transition: background 0.2s;"
-                                        title="Descargar" onmouseover="this.style.background='#cbd5e1'"
-                                        onmouseout="this.style.background='#e2e8f0'">⬇️</a>
+                                        style="color:var(--text-gray); text-decoration:none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 4px; background: var(--border-color); transition: background 0.2s;"
+                                        title="Descargar" onmouseover="this.style.background='var(--bg-main)'"
+                                        onmouseout="this.style.background='var(--border-color)'">⬇️</a>
 
                                     <button type="submit" formaction="{% url 'eliminar_cv' %}" onclick="return confirm('¿Estás seguro de que deseas eliminar tu hoja de vida?');"
                                         style="background: #fee2e2; border: 1px solid #f87171; color: #ef4444; border-radius: 4px; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"

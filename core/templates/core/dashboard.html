@@ -159,7 +159,7 @@ body { background-color: var(--bg-main); }
     width: 56px;
     height: 56px;
     border-radius: var(--radius-md);
-    background: #f1f5f9;
+    background: var(--bg-main);
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -189,7 +189,7 @@ body { background-color: var(--bg-main); }
     gap: 0.5rem;
 }
 .tag-rec {
-    background: #f1f5f9;
+    background: var(--bg-main);
     color: var(--text-muted);
     font-size: 0.75rem;
     font-weight: 500;
@@ -211,8 +211,8 @@ body { background-color: var(--bg-main); }
 
 /* Side Cards */
 .side-card {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    background: var(--primary-light);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -241,7 +241,7 @@ body { background-color: var(--bg-main); }
 .progress-container {
     width: 100%;
     height: 8px;
-    background: #e2e8f0;
+    background: var(--border-color);
     border-radius: 4px;
     margin-bottom: 1rem;
     overflow: hidden;
@@ -285,7 +285,7 @@ body { background-color: var(--bg-main); }
     top: 12px;
     bottom: -16px;
     width: 2px;
-    background: #e2e8f0;
+    background: var(--border-color);
     z-index: 1;
 }
 .timeline-item.green .timeline-dot { background: var(--success-color); }
@@ -329,19 +329,19 @@ body { background-color: var(--bg-main); }
         <div class="stats-grid-post">
             <div class="stat-card-post">
                 <div class="stat-trend neutral">Activos</div>
-                <div class="stat-icon-post" style="background:#eff6ff; color:#3b82f6;">📥</div>
+                <div class="stat-icon-post" style="background:rgba(59,130,246,0.15); color:#3b82f6;">📥</div>
                 <div class="stat-label-post">Postulantes Pendientes</div>
                 <div class="stat-value-post">{{ stats_empresa.pendientes }}</div>
             </div>
             <div class="stat-card-post">
                 <div class="stat-trend up">En proceso</div>
-                <div class="stat-icon-post" style="background:#f3e8ff; color:#a855f7;">🤝</div>
+                <div class="stat-icon-post" style="background:rgba(168,85,247,0.15); color:#a855f7;">🤝</div>
                 <div class="stat-label-post">Entrevistas</div>
                 <div class="stat-value-post">{{ stats_empresa.entrevistas }}</div>
             </div>
             <div class="stat-card-post">
                 <div class="stat-trend up">Aprobados</div>
-                <div class="stat-icon-post" style="background:#ecfdf5; color:#10b981;">✅</div>
+                <div class="stat-icon-post" style="background:rgba(16,185,129,0.15); color:#10b981;">✅</div>
                 <div class="stat-label-post">Cumplen Requisitos</div>
                 <div class="stat-value-post">{{ stats_empresa.cumplen }}</div>
             </div>
@@ -372,9 +372,9 @@ body { background-color: var(--bg-main); }
                             <div class="job-meta-rec">{{ p.cargo_titulo|default:"Sin cargo especificado" }}</div>
                             <div class="job-tags-rec">
                                 {% if p.hoja_de_vida %}
-                                <a href="{{ p.hoja_de_vida.url }}" target="_blank" class="tag-rec" style="background:#e0e7ff; color:#4338ca; text-decoration:none;">📄 Ver CV</a>
+                                <a href="{{ p.hoja_de_vida.url }}" target="_blank" class="tag-rec" style="background:rgba(67,56,202,0.15); color:#818cf8; text-decoration:none;">📄 Ver CV</a>
                                 {% endif %}
-                                <a href="{% url 'perfil' %}?id={{ p.id }}" class="tag-rec" style="background:#dcfce3; color:#166534; text-decoration:none;">👁 Ver Perfil</a>
+                                <a href="{% url 'perfil' %}?id={{ p.id }}" class="tag-rec" style="background:rgba(16,185,129,0.15); color:#34d399; text-decoration:none;">👁 Ver Perfil</a>
                             </div>
                         </div>
                     </div>
@@ -407,25 +407,25 @@ body { background-color: var(--bg-main); }
         <div class="stats-grid-post">
             <div class="stat-card-post">
                 <div class="stat-trend up">📈 +20%</div>
-                <div class="stat-icon-post" style="background:#eff6ff; color:#3b82f6;">➤</div>
+                <div class="stat-icon-post" style="background:rgba(59,130,246,0.15); color:#3b82f6;">➤</div>
                 <div class="stat-label-post">Postulaciones activas</div>
                 <div class="stat-value-post" id="statPostulaciones">0</div>
             </div>
             <div class="stat-card-post">
                 <div class="stat-trend up">📈 +5%</div>
-                <div class="stat-icon-post" style="background:#f3e8ff; color:#a855f7;">👁</div>
+                <div class="stat-icon-post" style="background:rgba(168,85,247,0.15); color:#a855f7;">👁</div>
                 <div class="stat-label-post">Vistas de perfil</div>
                 <div class="stat-value-post" id="statVistas">0</div>
             </div>
             <div class="stat-card-post">
                 <div class="stat-trend neutral">Sin cambios</div>
-                <div class="stat-icon-post" style="background:#fffbeb; color:#f59e0b;">📅</div>
+                <div class="stat-icon-post" style="background:rgba(245,158,11,0.15); color:#f59e0b;">📅</div>
                 <div class="stat-label-post">Entrevistas</div>
                 <div class="stat-value-post">0</div>
             </div>
             <div class="stat-card-post">
                 <a href="#" class="stat-trend" style="color:var(--primary-color);">Ver guardados</a>
-                <div class="stat-icon-post" style="background:#ecfdf5; color:#10b981;">🔖</div>
+                <div class="stat-icon-post" style="background:rgba(16,185,129,0.15); color:#10b981;">🔖</div>
                 <div class="stat-label-post">Ofertas guardadas</div>
                 <div class="stat-value-post" id="statGuardadas">0</div>
             </div>
@@ -439,7 +439,7 @@ body { background-color: var(--bg-main); }
                 </div>
                 
                 <div class="jobs-rec-list" id="recommendedJobsList">
-                    <div style="text-align:center; padding:3rem; background:white; border-radius:1rem; border:1px dashed var(--border-color);">
+                    <div style="text-align:center; padding:3rem; background:var(--bg-card); border-radius:1rem; border:1px dashed var(--border-color);">
                         <p style="color:var(--text-muted); margin: 0;">Pronto verás empleos aquí. <br><a href="{% url 'index' %}">Ir al portal de búsqueda</a></p>
                     </div>
                 </div>
@@ -463,7 +463,7 @@ body { background-color: var(--bg-main); }
 
 <!-- Modal Nueva Oferta -->
 <div id="newJobModal" class="modal" style="display:none;">
-    <div class="modal-content" style="background:white; padding:2rem; border-radius:var(--radius-lg); width:90%; max-width:500px; margin: 10% auto; position:relative;">
+    <div class="modal-content" style="background:var(--bg-card); padding:2rem; border-radius:var(--radius-lg); width:90%; max-width:500px; margin: 10% auto; position:relative;">
         <span class="close-btn" style="position:absolute; right:1.5rem; top:1.5rem; font-size:1.5rem; cursor:pointer;">&times;</span>
         <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem;">Publicar Nueva Oferta</h2>
         <form id="newJobForm">
@@ -495,7 +495,7 @@ body { background-color: var(--bg-main); }
 
 <!-- Modal Postulantes -->
 <div id="applicantsModal" class="modal" style="display:none;">
-    <div class="modal-content" style="background:white; padding:2rem; border-radius:var(--radius-lg); width:90%; max-width:500px; margin: 10% auto; position:relative;">
+    <div class="modal-content" style="background:var(--bg-card); padding:2rem; border-radius:var(--radius-lg); width:90%; max-width:500px; margin: 10% auto; position:relative;">
         <span class="close-btn" id="closeApplicants" style="position:absolute; right:1.5rem; top:1.5rem; font-size:1.5rem; cursor:pointer;">&times;</span>
         <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem;">Postulantes al Puesto</h2>
         <ul id="applicantsList" class="applicants-list"></ul>
