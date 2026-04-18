@@ -76,12 +76,14 @@ def index(request):
     })
 
 def registro(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     if request.method == 'POST':
-        nombre = request.POST.get('name')
+        nombre   = request.POST.get('name')
         username = request.POST.get('username', '').strip()
-        email = request.POST.get('email')
+        email    = request.POST.get('email')
         password = request.POST.get('password')
-        role = request.POST.get('role', 'postulante')
+        role     = request.POST.get('role', 'postulante')
         
         if not username:
             messages.error(request, 'El nombre de usuario es obligatorio.')
@@ -92,11 +94,10 @@ def registro(request):
         else:
             user = User.objects.create_user(username=username, email=email, password=password)
             Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
-            # Iniciar sesión automáticamente
             auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('dashboard')
-    
-    return render(request, 'core/registro.html')
+    # Redirect to homepage with modal auto-open
+    return redirect('/?auth=registro')
 
 def user_login(request):
     # Si ya está autenticado, ir directo al dashboard
@@ -114,7 +115,7 @@ def user_login(request):
         password = request.POST.get('password')
         next_url = request.POST.get('next', '')
 
-        # Buscar el usuario por email (filter evita crash si hay emails duplicados)
+        # Buscar el usuario por email
         user_obj = User.objects.filter(email=email).first()
         if user_obj:
             user = authenticate(request, username=user_obj.username, password=password)
@@ -123,16 +124,52 @@ def user_login(request):
 
         if user is not None:
             auth_login(request, user)
-            # Redirigir a la página original si venía de @login_required
             return redirect(next_url) if next_url else redirect('dashboard')
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
 
-    return render(request, 'core/login.html', {'next': next_url})
+    # Redirect GET requests to homepage with modal
+    return redirect('/?auth=login')
 
 def user_logout(request):
     auth_logout(request)
     return redirect('index')
+
+@require_POST
+def ajax_login(request):
+    """AJAX endpoint for modal login."""
+    email    = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '')
+    next_url = request.POST.get('next', '')
+
+    user_obj = User.objects.filter(email=email).first()
+    user = authenticate(request, username=user_obj.username, password=password) if user_obj else None
+
+    if user is not None:
+        auth_login(request, user)
+        return JsonResponse({'ok': True, 'redirect': next_url or '/dashboard/'})
+    return JsonResponse({'ok': False, 'error': 'Correo o contraseña incorrectos.'}, status=400)
+
+@require_POST
+def ajax_registro(request):
+    """AJAX endpoint for modal registration."""
+    nombre   = request.POST.get('name', '').strip()
+    username = request.POST.get('username', '').strip()
+    email    = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '')
+    role     = request.POST.get('role', 'postulante')
+
+    if not username:
+        return JsonResponse({'ok': False, 'error': 'El nombre de usuario es obligatorio.'}, status=400)
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({'ok': False, 'error': 'Ese nombre de usuario ya está en uso.'}, status=400)
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({'ok': False, 'error': 'El correo ya está registrado.'}, status=400)
+
+    user = User.objects.create_user(username=username, email=email, password=password)
+    Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
+    auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
 
 @login_required
 def dashboard(request):
@@ -190,13 +227,16 @@ def buscar_empleos(request):
     if user_profile and user_profile.role == 'postulante':
         postulaciones_ids = list(Postulacion.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True))
 
+    ofertas = list(ofertas)
+    total = len(ofertas)
+
     return render(request, 'core/buscar_empleos.html', {
         'ofertas': ofertas,
         'q': query,
         'cat': cat,
         'mod': mod,
         'postulaciones_ids': postulaciones_ids,
-        'total_vacantes': ofertas.count()
+        'total_vacantes': total
     })
 
 @login_required

@@ -540,12 +540,12 @@ body { background: var(--jd-bg); }
                         </div>
                     {% endif %}
                 {% else %}
-                    <a href="{% url 'login' %}?next={% url 'detalle_oferta' oferta.id %}" class="jd-btn-login">
+                    <button onclick="openAuthModal('login')" class="jd-btn-login" style="cursor:pointer; border:2px solid var(--jd-primary); width:100%;">
                         🔐 Iniciar sesión para postular
-                    </a>
-                    <a href="{% url 'registro' %}" style="display:block; text-align:center; font-size:0.85rem; color:var(--jd-text-muted); text-decoration:none; margin-top:0.5rem; font-weight:500;">
+                    </button>
+                    <button onclick="openAuthModal('registro')" style="display:block; width:100%; text-align:center; font-size:0.85rem; color:var(--jd-text-muted); text-decoration:none; margin-top:0.5rem; font-weight:500; background:none; border:none; cursor:pointer;">
                         ¿No tienes cuenta? <span style="color:var(--jd-primary); font-weight:700;">Regístrate gratis →</span>
-                    </a>
+                    </button>
                 {% endif %}
 
                 <!-- Link to company profile -->

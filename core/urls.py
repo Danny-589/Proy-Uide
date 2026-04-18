@@ -20,4 +20,6 @@ urlpatterns = [
     path('api/candidato/estado/', views.actualizar_estado_candidato, name='actualizar_estado_candidato'),
     path('perfil/<int:profile_id>/resena/', views.crear_resena, name='crear_resena'),
     path('resena/<int:resena_id>/eliminar/', views.eliminar_resena, name='eliminar_resena'),
+    path('ajax/login/', views.ajax_login, name='ajax_login'),
+    path('ajax/registro/', views.ajax_registro, name='ajax_registro'),
 ]
