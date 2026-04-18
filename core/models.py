@@ -135,3 +135,15 @@ class Postulacion(models.Model):
 
     def __str__(self):
         return f"{self.postulante.user.username} aplica a {self.oferta.titulo}"
+
+class OfertaFoto(models.Model):
+    oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE, related_name='fotos')
+    imagen = models.ImageField(upload_to='ofertas_fotos/')
+    pie = models.CharField(max_length=200, blank=True, verbose_name='Pie de foto (opcional)')
+    orden = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden', 'id']
+
+    def __str__(self):
+        return f"Foto de {self.oferta.titulo} (#{self.id})"

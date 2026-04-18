@@ -484,6 +484,49 @@ body { background: var(--jd-bg); }
             </div>
         </div>
 
+        <!-- ══ GALERÍA DE FOTOS ══ -->
+        {% if fotos %}
+        <div class="jd-card">
+            <div class="jd-card-body">
+                <h2 class="jd-section-title">📸 Galería del lugar de trabajo</h2>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:0.875rem;">
+                    {% for foto in fotos %}
+                    <div onclick="openLightbox('{{ foto.imagen.url }}')"
+                        style="border-radius:0.875rem; overflow:hidden; aspect-ratio:4/3; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.2s, box-shadow 0.2s;"
+                        onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
+                        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'">
+                        <img src="{{ foto.imagen.url }}" alt="{{ foto.pie|default:'Foto del puesto' }}"
+                            style="width:100%; height:100%; object-fit:cover;" loading="lazy">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Lightbox -->
+        <div id="jdLightbox" onclick="closeLightbox()"
+            style="display:none; position:fixed; inset:0; z-index:20000; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; cursor:zoom-out; backdrop-filter:blur(5px);">
+            <img id="jdLightboxImg" src="" style="max-width:90vw; max-height:88vh; border-radius:1.25rem; box-shadow:0 30px 60px rgba(0,0,0,0.5); object-fit:contain; animation:lbIn 0.25s cubic-bezier(0.16,1,0.3,1) both;">
+            <button onclick="closeLightbox()" style="position:absolute; top:1.25rem; right:1.5rem; background:rgba(255,255,255,0.12); border:none; color:white; font-size:1.4rem; border-radius:50%; width:42px; height:42px; cursor:pointer; backdrop-filter:blur(4px);">✕</button>
+        </div>
+        <style>
+        @keyframes lbIn { from { opacity:0; transform:scale(0.94); } to { opacity:1; transform:scale(1); } }
+        </style>
+        <script>
+        function openLightbox(src) {
+            document.getElementById('jdLightboxImg').src = src;
+            const lb = document.getElementById('jdLightbox');
+            lb.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeLightbox() {
+            document.getElementById('jdLightbox').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+        </script>
+
     </div>
 
     <!-- ══ RIGHT / SIDEBAR ══ -->

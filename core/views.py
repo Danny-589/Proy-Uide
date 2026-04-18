@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Q
 import json
-from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena
+from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
@@ -409,6 +409,10 @@ def crear_oferta(request):
             oferta = form.save(commit=False)
             oferta.empresa = profile
             oferta.save()
+            # Guardar fotos de galeria (max 8)
+            fotos = request.FILES.getlist('galeria_fotos')
+            for i, foto in enumerate(fotos[:8]):
+                OfertaFoto.objects.create(oferta=oferta, imagen=foto, orden=i)
             messages.success(request, '¡Vacante publicada exitosamente!')
             return redirect('editar_perfil')
     else:
@@ -429,12 +433,25 @@ def editar_oferta(request, oferta_id):
         form = OfertaForm(request.POST, instance=oferta)
         if form.is_valid():
             form.save()
+            # Eliminar fotos marcadas
+            eliminar_ids = request.POST.getlist('eliminar_foto')
+            if eliminar_ids:
+                OfertaFoto.objects.filter(id__in=eliminar_ids, oferta=oferta).delete()
+            # Agregar nuevas fotos
+            fotos_nuevas = request.FILES.getlist('galeria_fotos')
+            existentes = oferta.fotos.count()
+            for i, foto in enumerate(fotos_nuevas[:max(0, 8 - existentes)]):
+                OfertaFoto.objects.create(oferta=oferta, imagen=foto, orden=existentes + i)
             messages.success(request, '¡Vacante actualizada exitosamente!')
             return redirect('index')
     else:
         form = OfertaForm(instance=oferta)
         
-    return render(request, 'core/editar_oferta.html', {'form': form, 'oferta': oferta})
+    return render(request, 'core/editar_oferta.html', {
+        'form': form,
+        'oferta': oferta,
+        'fotos': oferta.fotos.all(),
+    })
 
 @login_required
 def eliminar_oferta(request, oferta_id):
@@ -499,6 +516,7 @@ def aplicar_oferta(request, oferta_id):
 def detalle_oferta(request, oferta_id):
     """Public-facing job detail page."""
     oferta = get_object_or_404(Oferta, id=oferta_id, estado=True)
+    fotos = oferta.fotos.all()
     
     ya_postulo = False
     user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
@@ -507,6 +525,7 @@ def detalle_oferta(request, oferta_id):
     
     return render(request, 'core/detalle_oferta.html', {
         'oferta': oferta,
+        'fotos': fotos,
         'ya_postulo': ya_postulo,
         'user_profile': user_profile,
     })
