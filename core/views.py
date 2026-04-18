@@ -9,7 +9,8 @@ from django.db.models import Q
 from django.core.mail import send_mail
 import json
 import random
-from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto, ConfiguracionPlataforma, CodigoVerificacion
+from django.utils import timezone
+from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto, ConfiguracionPlataforma
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
@@ -168,18 +169,11 @@ def ajax_registro(request):
     if User.objects.filter(email=email).exists():
         return JsonResponse({'ok': False, 'error': 'El correo ya está registrado.'}, status=400)
 
-    user = User.objects.create_user(username=username, email=email, password=password)
-    
     config = ConfiguracionPlataforma.objects.first()
     requires_verification = config.requiere_verificacion_correo if config else True
     
     if requires_verification:
-        user.is_active = False
-        user.save()
-        Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
-        
         codigo_generado = str(random.randint(100000, 999999))
-        CodigoVerificacion.objects.create(user=user, codigo=codigo_generado)
         
         try:
             send_mail(
@@ -190,9 +184,19 @@ def ajax_registro(request):
                 fail_silently=False,
             )
         except Exception as e:
-            # En producción, si falla el envío, limpiamos el usuario para que no quede estancado y devolvemos el error a la pantalla
-            user.delete()
+            # En producción, devolvemos el error a la pantalla
             return JsonResponse({'ok': False, 'error': f"Error de correo: {str(e)[:100]}... Revisa credenciales SMTP."})
+            
+        # Guardar en sesión en lugar de la Base de Datos
+        request.session['registro_pendiente'] = {
+            'username': username,
+            'email': email,
+            'password': password,
+            'nombre': nombre,
+            'role': role,
+            'codigo': codigo_generado,
+            'timestamp': timezone.now().timestamp()
+        }
         
         # Siempre imprimimos en consola para facilitar pruebas locales
         print(f"\n=========================================")
@@ -201,6 +205,8 @@ def ajax_registro(request):
         
         return JsonResponse({'ok': True, 'requires_verification': True, 'username': username})
     else:
+        # Si no requiere verificación, creamos directo el usuario oficial
+        user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
         auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
@@ -214,30 +220,32 @@ def ajax_verificar_codigo(request):
     if not username or not codigo:
         return JsonResponse({'ok': False, 'error': 'Faltan datos.'}, status=400)
         
-    user = User.objects.filter(username=username).first()
-    if not user:
-        return JsonResponse({'ok': False, 'error': 'Usuario no encontrado.'}, status=404)
+    pendiente = request.session.get('registro_pendiente')
+    if not pendiente or pendiente.get('username') != username:
+        return JsonResponse({'ok': False, 'error': 'No hay un registro pendiente o la sesión expiró.'}, status=400)
         
-    if user.is_active:
-        return JsonResponse({'ok': True, 'redirect': '/dashboard/'}) # Ya estaba activo
-        
-    if not hasattr(user, 'codigo_verificacion'):
-        return JsonResponse({'ok': False, 'error': 'No se solicitó verificación para este usuario.'}, status=400)
-        
-    verify_obj = user.codigo_verificacion
-    if verify_obj.ha_expirado():
-        verify_obj.delete()
-        user.delete() # Limpiamos el usuario inactivo para que pueda volver a registrarse con su correo (ya que no paso la validacion a tiempo)
+    tiempo_creado = pendiente.get('timestamp', 0)
+    if timezone.now().timestamp() > tiempo_creado + 900: # 15 minutos = 900 segundos
+        del request.session['registro_pendiente']
         return JsonResponse({'ok': False, 'error': 'El código ha expirado. Por favor, regístrate de nuevo.'}, status=400)
         
-    if verify_obj.codigo != codigo:
+    if pendiente.get('codigo') != codigo:
         return JsonResponse({'ok': False, 'error': 'Código incorrecto. Verifica el número e intenta nuevamente.'}, status=400)
         
-    # Validation successful
-    user.is_active = True
-    user.save()
-    verify_obj.delete()
+    # El código es correcto. ¡Crear permanentemente el usuario!
+    user = User.objects.create_user(
+        username=pendiente['username'], 
+        email=pendiente['email'], 
+        password=pendiente['password']
+    )
+    Profile.objects.create(
+        user=user, 
+        role=pendiente['role'], 
+        nombre_visualizacion=pendiente['nombre']
+    )
     
+    # Limpiar sesión temporal y loguear
+    del request.session['registro_pendiente']
     auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
 

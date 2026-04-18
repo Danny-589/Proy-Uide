@@ -168,17 +168,3 @@ class ConfiguracionPlataforma(models.Model):
         if hasattr(self.__class__, 'objects') and self.__class__.objects.exists() and not self.pk:
             self.pk = self.__class__.objects.first().pk
         super().save(*args, **kwargs)
-
-class CodigoVerificacion(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='codigo_verificacion')
-    codigo = models.CharField(max_length=6)
-    creado_en = models.DateTimeField(auto_now_add=True)
-    
-    def ha_expirado(self):
-        from django.utils import timezone
-        import datetime
-        return timezone.now() > self.creado_en + datetime.timedelta(minutes=15)
-        
-    def __str__(self):
-        return f"Código {self.codigo} para {self.user.username}"
-
