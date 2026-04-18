@@ -18,4 +18,6 @@ urlpatterns = [
     path('oferta/aplicar/<int:oferta_id>/', views.aplicar_oferta, name='aplicar_oferta'),
     path('oferta/<int:oferta_id>/', views.detalle_oferta, name='detalle_oferta'),
     path('api/candidato/estado/', views.actualizar_estado_candidato, name='actualizar_estado_candidato'),
+    path('perfil/<int:profile_id>/resena/', views.crear_resena, name='crear_resena'),
+    path('resena/<int:resena_id>/eliminar/', views.eliminar_resena, name='eliminar_resena'),
 ]

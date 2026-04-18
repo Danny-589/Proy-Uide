@@ -5,8 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db.models import Q
 import json
-from .models import Profile, Oferta, ClasificacionCandidato, Postulacion
+from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
@@ -42,7 +43,18 @@ def index(request):
     
     ofertas = Oferta.objects.filter(estado=True)
     if query:
-        ofertas = ofertas.filter(titulo__unaccent__icontains=query)
+        terms = query.split()
+        q_obj = Q()
+        for term in terms:
+            q_obj &= (
+                Q(titulo__unaccent__icontains=term) |
+                Q(descripcion__unaccent__icontains=term) |
+                Q(etiqueta__unaccent__icontains=term) |
+                Q(ubicacion__unaccent__icontains=term) |
+                Q(empresa__empresa_nombre__unaccent__icontains=term) |
+                Q(empresa__nombre_visualizacion__unaccent__icontains=term)
+            )
+        ofertas = ofertas.filter(q_obj).distinct()
     if ubicacion:
         ofertas = ofertas.filter(ubicacion__unaccent__icontains=ubicacion)
         
@@ -151,13 +163,21 @@ def empleo(request):
     return render(request, 'core/empleo.html')
 
 def buscar_empleos(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     cat = request.GET.get('cat', '')
     mod = request.GET.get('mod', '')
 
-    ofertas = Oferta.objects.filter(estado=True)
+    ofertas = Oferta.objects.filter(estado=True).select_related('empresa')
+
     if query:
-        ofertas = ofertas.filter(titulo__unaccent__icontains=query)
+        ofertas = ofertas.filter(
+            Q(titulo__icontains=query) |
+            Q(descripcion__icontains=query) |
+            Q(ubicacion__icontains=query) |
+            Q(empresa__empresa_nombre__icontains=query) |
+            Q(empresa__nombre_visualizacion__icontains=query)
+        ).distinct()
+
     if cat:
         ofertas = ofertas.filter(etiqueta=cat)
     if mod:
@@ -186,7 +206,112 @@ def perfil(request):
         profile = get_object_or_404(Profile, id=profile_id)
     else:
         profile, created = Profile.objects.get_or_create(user=request.user)
-    return render(request, 'core/perfil.html', {'profile': profile})
+
+    viewer = getattr(request.user, 'profile', None)
+    is_own_profile = (viewer == profile)
+
+    # ── Lógica de permiso para reseñar ──────────────────────────────────────
+    puede_resenar = False
+    ya_reseno = False
+    resena_propia = None
+
+    if viewer and not is_own_profile:
+        if viewer.role == 'empresa' and profile.role == 'postulante':
+            # Empresa puede reseñar si el postulante aplicó a alguna de sus ofertas
+            puede_resenar = Postulacion.objects.filter(
+                oferta__empresa=viewer, postulante=profile
+            ).exists()
+        elif viewer.role == 'postulante' and profile.role == 'empresa':
+            # Postulante puede reseñar si aplicó a alguna oferta de esa empresa
+            puede_resenar = Postulacion.objects.filter(
+                postulante=viewer, oferta__empresa=profile
+            ).exists()
+
+        if puede_resenar:
+            resena_propia = Resena.objects.filter(autor=viewer, destinatario=profile).first()
+            ya_reseno = resena_propia is not None
+
+    resenas = Resena.objects.filter(destinatario=profile).select_related('autor', 'autor__user')
+    promedio = None
+    if resenas.exists():
+        total = sum(r.calificacion for r in resenas)
+        promedio = round(total / resenas.count(), 1)
+
+    return render(request, 'core/perfil.html', {
+        'profile': profile,
+        'is_own_profile': is_own_profile,
+        'puede_resenar': puede_resenar,
+        'ya_reseno': ya_reseno,
+        'resena_propia': resena_propia,
+        'resenas': resenas,
+        'promedio': promedio,
+    })
+
+
+@login_required
+@require_POST
+def crear_resena(request, profile_id):
+    """Crea o actualiza una reseña del usuario autenticado al perfil indicado."""
+    destinatario = get_object_or_404(Profile, id=profile_id)
+    autor = request.user.profile
+
+    # Validaciones de seguridad
+    if autor == destinatario:
+        messages.error(request, 'No puedes reseñarte a ti mismo.')
+        return redirect('perfil')
+
+    # Verificar que existe interacción
+    tiene_permiso = False
+    if autor.role == 'empresa' and destinatario.role == 'postulante':
+        tiene_permiso = Postulacion.objects.filter(
+            oferta__empresa=autor, postulante=destinatario
+        ).exists()
+    elif autor.role == 'postulante' and destinatario.role == 'empresa':
+        tiene_permiso = Postulacion.objects.filter(
+            postulante=autor, oferta__empresa=destinatario
+        ).exists()
+
+    if not tiene_permiso:
+        messages.error(request, 'No tienes permiso para reseñar este perfil.')
+        return redirect(f'/perfil/?id={profile_id}')
+
+    calificacion = int(request.POST.get('calificacion', 5))
+    comentario = request.POST.get('comentario', '').strip()
+
+    if not comentario:
+        messages.error(request, 'El comentario no puede estar vacío.')
+        return redirect(f'/perfil/?id={profile_id}')
+
+    if not (1 <= calificacion <= 5):
+        messages.error(request, 'La calificación debe ser entre 1 y 5.')
+        return redirect(f'/perfil/?id={profile_id}')
+
+    resena, created = Resena.objects.update_or_create(
+        autor=autor,
+        destinatario=destinatario,
+        defaults={'calificacion': calificacion, 'comentario': comentario}
+    )
+
+    if created:
+        messages.success(request, '¡Reseña publicada exitosamente!')
+    else:
+        messages.success(request, 'Tu reseña ha sido actualizada.')
+
+    return redirect(f'/perfil/?id={profile_id}')
+
+
+@login_required
+@require_POST
+def eliminar_resena(request, resena_id):
+    """Elimina una reseña, solo si el usuario actual es el autor."""
+    resena = get_object_or_404(Resena, id=resena_id)
+    if resena.autor != request.user.profile:
+        messages.error(request, 'No tienes permiso para eliminar esta reseña.')
+        return redirect('perfil')
+    destinatario_id = resena.destinatario.id
+    resena.delete()
+    messages.success(request, 'Reseña eliminada.')
+    return redirect(f'/perfil/?id={destinatario_id}')
 
 @login_required
 def editar_perfil(request):

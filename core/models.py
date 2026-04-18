@@ -31,15 +31,31 @@ class Profile(models.Model):
         return f"Perfil de {self.user.username} ({self.role})"
 
 class Resena(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='resenas')
-    autor = models.CharField(max_length=255)
-    empresa = models.CharField(max_length=255, blank=True)
-    calificacion = models.IntegerField(default=5)
-    comentario = models.TextField()
+    CALIFICACION_CHOICES = [(i, i) for i in range(1, 6)]
+
+    destinatario = models.ForeignKey(
+        Profile, on_delete=models.CASCADE,
+        related_name='resenas_recibidas',
+        verbose_name='Perfil reseñado'
+    )
+    autor = models.ForeignKey(
+        Profile, on_delete=models.CASCADE,
+        related_name='resenas_escritas',
+        verbose_name='Autor de la reseña'
+    )
+    calificacion = models.IntegerField(choices=CALIFICACION_CHOICES, default=5)
+    comentario = models.TextField(verbose_name='Comentario')
     fecha = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('destinatario', 'autor')
+        ordering = ['-fecha']
+        verbose_name = 'Reseña'
+        verbose_name_plural = 'Reseñas'
 
     def __str__(self):
-        return f"Reseña de {self.autor} para {self.profile.user.username}"
+        return f"Reseña de {self.autor.nombre_visualizacion or self.autor.user.username} → {self.destinatario.nombre_visualizacion or self.destinatario.user.username} ({self.calificacion}★)"
 
 class Oferta(models.Model):
     MODALIDAD_CHOICES = (
