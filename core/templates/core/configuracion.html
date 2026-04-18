@@ -51,12 +51,50 @@
         font-size: 1.25rem;
         font-weight: 700;
         color: var(--text-dark);
-        margin: 0 0 1.5rem 0;
+        margin: 0;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 0.5rem;
-        border-bottom: 1px solid var(--border-light);
+        padding-bottom: 0;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .cfg-card-title-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .cfg-accordion-arrow {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        transition: transform 0.3s ease;
+    }
+
+    .cfg-card.open .cfg-accordion-arrow {
+        transform: rotate(180deg);
+    }
+
+    .cfg-card.open .cfg-card-title {
+        margin-bottom: 1.5rem;
         padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .cfg-content-wrapper {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.3s ease;
+    }
+
+    .cfg-card.open .cfg-content-wrapper {
+        grid-template-rows: 1fr;
+    }
+
+    .cfg-content-inner {
+        overflow: hidden;
     }
 
     .cfg-form-group {
@@ -151,78 +189,101 @@
     {% endif %}
 
     <!-- ── FORMULARIO: CUENTA ── -->
-    <div class="cfg-card">
-        <h2 class="cfg-card-title"><span>👤</span> Preferencias de Cuenta</h2>
-        <form method="POST">
-            {% csrf_token %}
-            {% if user_form.errors and 'user_update' in request.POST %}
-            <div class="alert alert-error">
-                <strong>Corrige los siguientes errores:</strong>
-                {{ user_form.errors }}
-            </div>
-            {% endif %}
+    <div class="cfg-card open" onclick="toggleAccordion(this, event)">
+        <h2 class="cfg-card-title">
+            <div class="cfg-card-title-left"><span>👤</span> Preferencias de Cuenta</div>
+            <span class="cfg-accordion-arrow">▼</span>
+        </h2>
+        <div class="cfg-content-wrapper">
+            <div class="cfg-content-inner">
+                <form method="POST" onclick="event.stopPropagation()">
+                    {% csrf_token %}
+                    {% if user_form.errors and 'user_update' in request.POST %}
+                    <div class="alert alert-error">
+                        <strong>Corrige los siguientes errores:</strong>
+                        {{ user_form.errors }}
+                    </div>
+                    {% endif %}
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                <div class="cfg-form-group">
-                    <label>Nombre de Usuario</label>
-                    {{ user_form.username }}
-                </div>
-                <div class="cfg-form-group">
-                    <label>Dirección de Correo Electrónico</label>
-                    {{ user_form.email }}
-                </div>
-            </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="cfg-form-group">
+                            <label>Nombre de Usuario</label>
+                            {{ user_form.username }}
+                        </div>
+                        <div class="cfg-form-group">
+                            <label>Dirección de Correo Electrónico</label>
+                            {{ user_form.email }}
+                        </div>
+                    </div>
 
-            <button type="submit" name="user_update" class="btn-save" style="margin-top: 1rem;">
-                💾 Actualizar Cuenta
-            </button>
-        </form>
+                    <button type="submit" name="user_update" class="btn-save" style="margin-top: 1rem;">
+                        💾 Actualizar Cuenta
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- ── FORMULARIO: CONTRASEÑA ── -->
-    <div class="cfg-card">
-        <h2 class="cfg-card-title"><span>🔐</span> Seguridad y Contraseña</h2>
-        <form method="POST">
-            {% csrf_token %}
-            {% if password_form.errors and 'password_update' in request.POST %}
-            <div class="alert alert-error">
-                <strong>Corrige los siguientes errores:</strong>
-                {{ password_form.errors }}
-            </div>
-            {% endif %}
+    <div class="cfg-card" onclick="toggleAccordion(this, event)">
+        <h2 class="cfg-card-title">
+            <div class="cfg-card-title-left"><span>🔐</span> Seguridad y Contraseña</div>
+            <span class="cfg-accordion-arrow">▼</span>
+        </h2>
+        <div class="cfg-content-wrapper">
+            <div class="cfg-content-inner">
+                <form method="POST" onclick="event.stopPropagation()">
+                    {% csrf_token %}
+                    {% if password_form.errors and 'password_update' in request.POST %}
+                    <div class="alert alert-error">
+                        <strong>Corrige los siguientes errores:</strong>
+                        {{ password_form.errors }}
+                    </div>
+                    {% endif %}
 
-            {% for field in password_form %}
-            <div class="cfg-form-group">
-                <label>{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                <span class="helptext">{{ field.help_text|safe }}</span>
-                {% endif %}
-            </div>
-            {% endfor %}
+                    {% for field in password_form %}
+                    <div class="cfg-form-group">
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <span class="helptext">{{ field.help_text|safe }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
 
-            <button type="submit" name="password_update" class="btn-save"
-                style="margin-top: 1rem; background: #0f172a;">
-                🛡️ Cambiar Contraseña
-            </button>
-        </form>
+                    <button type="submit" name="password_update" class="btn-save"
+                        style="margin-top: 1rem; background: #0f172a;">
+                        🛡️ Cambiar Contraseña
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- ── FORMULARIO: 2FA ── -->
-    <div class="cfg-card">
-        <h2 class="cfg-card-title"><span>🛡️</span> Verificación en Dos Pasos (2FA)</h2>
-        <p style="color: var(--text-gray); font-size: 0.95rem; margin-bottom: 1.5rem;">
-            Añade una capa extra de seguridad. Si habilitas esta opción, se te enviará un código de 6 dígitos a tu correo cada vez que intentes iniciar sesión.
-        </p>
-        <form method="POST" id="form-2fa" style="margin-top: 1rem;">
-            {% csrf_token %}
-            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-dark);">
-                <input type="checkbox" name="requiere_2fa" value="1" id="toggle-2fa-checkbox" {% if request.user.profile.requiere_2fa %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary-blue);">
-                Habilitar verificación por correo (2FA)
-            </label>
-            <input type="hidden" name="password_confirm" id="hidden_password_confirm">
-            <input type="hidden" name="security_update" value="1">
-        </form>
+    <div class="cfg-card" onclick="toggleAccordion(this, event)">
+        <h2 class="cfg-card-title">
+            <div class="cfg-card-title-left"><span>🛡️</span> Verificación en Dos Pasos (2FA)</div>
+            <span class="cfg-accordion-arrow">▼</span>
+        </h2>
+        <div class="cfg-content-wrapper">
+            <div class="cfg-content-inner">
+                <div style="padding-top:1rem;" onclick="event.stopPropagation()">
+                    <p style="color: var(--text-gray); font-size: 0.95rem; margin-bottom: 1.5rem;">
+                        Añade una capa extra de seguridad. Si habilitas esta opción, se te enviará un código de 6 dígitos a tu correo cada vez que intentes iniciar sesión.
+                    </p>
+                    <form method="POST" id="form-2fa" style="margin-top: 1rem;">
+                        {% csrf_token %}
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-dark);">
+                            <input type="checkbox" name="requiere_2fa" value="1" id="toggle-2fa-checkbox" {% if request.user.profile.requiere_2fa %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary-blue);">
+                            Habilitar verificación por correo (2FA)
+                        </label>
+                        <input type="hidden" name="password_confirm" id="hidden_password_confirm">
+                        <input type="hidden" name="security_update" value="1">
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -258,6 +319,14 @@
 </style>
 
 <script>
+    function toggleAccordion(card, event) {
+        // Ignorar el click si viene desde dentro del contenido
+        if (event.target.closest('form') || event.target.closest('input') || event.target.closest('label') || event.target.closest('button')) {
+            return;
+        }
+        card.classList.toggle('open');
+    }
+
     const checkbox2fa = document.getElementById('toggle-2fa-checkbox');
     checkbox2fa.addEventListener('click', function(e) {
         e.preventDefault(); 
