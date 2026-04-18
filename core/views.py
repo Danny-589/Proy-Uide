@@ -414,7 +414,7 @@ def crear_oferta(request):
             for i, foto in enumerate(fotos[:8]):
                 OfertaFoto.objects.create(oferta=oferta, imagen=foto, orden=i)
             messages.success(request, '¡Vacante publicada exitosamente!')
-            return redirect('editar_perfil')
+            return redirect('index')
     else:
         form = OfertaForm()
         
@@ -459,7 +459,7 @@ def eliminar_oferta(request, oferta_id):
         oferta = get_object_or_404(Oferta, id=oferta_id, empresa=request.user.profile)
         oferta.delete()
         messages.success(request, "Vacante eliminada exitosamente.")
-    return redirect('editar_perfil')
+    return redirect('index')
 
 @login_required
 @require_POST
