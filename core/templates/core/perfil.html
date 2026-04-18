@@ -569,19 +569,21 @@
                                 style="padding:0.75rem 2rem; font-size:1rem; border-radius:0.875rem;">
                                 {% if ya_reseno %}💾 Actualizar Reseña{% else %}🚀 Publicar Reseña{% endif %}
                             </button>
-                            {% if ya_reseno %}
-                            <form method="POST" action="{% url 'eliminar_resena' resena_propia.id %}"
-                                style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline"
-                                    style="padding:0.75rem 1.5rem; font-size:1rem; border-radius:0.875rem; color:#ef4444; border-color:#ef4444;"
-                                    onclick="return confirm('¿Eliminar tu reseña?')">
-                                    🗑️ Eliminar
-                                </button>
-                            </form>
-                            {% endif %}
                         </div>
                     </form>
+
+                    {# Formulario de eliminación FUERA del form principal (los forms no se pueden anidar) #}
+                    {% if ya_reseno %}
+                    <form method="POST" action="{% url 'eliminar_resena' resena_propia.id %}"
+                        style="margin-top:0.75rem;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline"
+                            style="padding:0.75rem 1.5rem; font-size:1rem; border-radius:0.875rem; color:#ef4444; border-color:#ef4444;"
+                            onclick="return confirm('¿Eliminar tu reseña?')">
+                            🗑️ Eliminar reseña
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
                 <div style="height:1.5rem; border-top:1px solid var(--border-subtle); margin:1.5rem 0;"></div>
                 {% elif not is_own_profile and request.user.is_authenticated %}
