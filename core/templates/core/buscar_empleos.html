@@ -90,28 +90,6 @@ body {
     color: var(--text-muted);
 }
 
-.help-card {
-    background: var(--primary-light);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-}
-.help-card h4 {
-    color: var(--primary-hover);
-    font-size: 0.875rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-}
-.help-card p {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin-bottom: 1rem;
-}
-.help-link {
-    font-size: 0.875rem;
-    color: var(--primary-color);
-    font-weight: 600;
-}
 
 /* Results Content Styles */
 .results-header {
@@ -318,12 +296,6 @@ body {
                 <a href="{% url 'buscar_empleos' %}{% if q %}?q={{ q }}{% endif %}" class="btn btn-outline w-full mt-2" style="text-align:center; display:block; text-decoration:none; margin-top:0.5rem;">Limpiar filtros</a>
                 {% endif %}
             </form>
-        </div>
-
-        <div class="help-card">
-            <h4>¿Necesitas ayuda?</h4>
-            <p>Recibe asesoría personalizada para mejorar tu perfil.</p>
-            <a href="#" class="help-link">Contactar soporte</a>
         </div>
     </aside>
 
