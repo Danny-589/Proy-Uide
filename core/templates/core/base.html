@@ -44,8 +44,11 @@
                         {% endif %}
                         <span>{{ user.profile.nombre_visualizacion|default:user.username }}</span>
                     </a>
-                    <a href="{% url 'logout' %}" class="btn"
-                        style="background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 0.4rem 1rem;">Salir</a>
+                    <button onclick="openSideMenu()" style="background:none; border:none; cursor:pointer; padding:0.5rem; margin-left:0.5rem; color:var(--text-main); display:flex; align-items:center; justify-content:center; border-radius:0.5rem; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='none'">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 28px; height: 28px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
                     {% else %}
                     <button onclick="openAuthModal('login')" style="font-weight:500; background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-main); padding:0;">Iniciar sesión</button>
                     <button onclick="openAuthModal('registro')" class="btn btn-primary" style="padding:0.5rem 1.2rem;">Registro</button>
@@ -235,6 +238,92 @@
         }, 5000);
     });
     </script>
+
+    <!-- ── CSS PARA NUEVOS PANELES Y SWITCH ── -->
+    <style>
+    .switch-label {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+    .switch-label input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #cbd5e1; transition: .4s; border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+        background-color: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #2563eb; }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    @keyframes sideMenuIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes sideMenuOut { from { transform: translateX(0); } to { transform: translateX(100%); } }
+    
+    #sideMenuPanel {
+        animation: sideMenuIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .side-closing #sideMenuPanel {
+        animation: sideMenuOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .logout-anim-in { animation: authFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .auth-closing .logout-anim-out { animation: authFadeOut 0.28s forwards; }
+    </style>
+
+    <!-- ── SIDE MENU PANEL ── -->
+    <div id="sideMenuModal" style="display:none; position:fixed; inset:0; z-index:10000; justify-content:flex-end;">
+        <div id="sideMenuBackdrop" onclick="closeSideMenu()" style="position:absolute; inset:0; background:rgba(15, 23, 42, 0.4); backdrop-filter:blur(3px);"></div>
+        <aside id="sideMenuPanel" style="position:relative; width:320px; height:100%; background:white; box-shadow:-5px 0 25px rgba(0,0,0,0.1); display:flex; flex-direction:column; padding:2rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2.5rem;">
+                <h3 style="font-size:1.25rem; font-weight:700; color:#1e293b; margin:0;">Menú</h3>
+                <button onclick="closeSideMenu()" style="background:#f1f5f9; border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; color:#64748b; transition:background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">✕</button>
+            </div>
+            
+            <button style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:1rem; border:none; background:none; cursor:pointer; border-radius:0.75rem; transition:background 0.2s; color:#334155; font-size:1rem; font-weight:600; margin-bottom:0.5rem;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
+                <span style="font-size:1.3rem;">⚙️</span> Configuración y privacidad
+            </button>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:1rem; border-radius:0.75rem; transition:background 0.2s; color:#334155; font-size:1rem; font-weight:600; margin-bottom:auto;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <span style="font-size:1.3rem;">🌙</span> Modo oscuro
+                </div>
+                <!-- Toggle CSS purísimo sin lógica aún por pedido del usuario -->
+                <label class="switch-label">
+                    <input type="checkbox" id="darkModeToggleSidebar">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <button onclick="openLogoutModal()" style="display:flex; justify-content:center; align-items:center; gap:0.5rem; width:100%; padding:1rem; border:1px solid #fee2e2; background:#fef2f2; cursor:pointer; border-radius:0.75rem; transition:background 0.2s; color:#ef4444; font-size:1rem; font-weight:700; margin-top:2rem;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                <span style="font-size:1.2rem;">🚪</span> Cerrar sesión
+            </button>
+        </aside>
+    </div>
+
+    <!-- ── LOGOUT MODAL ── -->
+    <div id="logoutModalWrapper" style="display:none; position:fixed; inset:0; z-index:10001; align-items:center; justify-content:center;">
+        <div id="logoutBackdrop" onclick="closeLogoutModal()" style="position:absolute; inset:0; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(4px);"></div>
+        <div id="logoutPanel" class="logout-anim-in" style="position:relative; background:white; width:90%; max-width:400px; border-radius:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; text-align:center;">
+            
+            <div style="background:#fef2f2; padding:2.5rem 2rem 1.5rem; border-bottom:1px solid #fee2e2;">
+                <div style="width:72px; height:72px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;">
+                    <span style="font-size:2.5rem;">🚨</span>
+                </div>
+                <h3 style="margin:0; font-size:1.5rem; font-weight:800; color:#991b1b;">¿Cerrar tu sesión?</h3>
+            </div>
+            
+            <div style="padding:1.5rem 2rem 2rem;">
+                <p style="margin:0 0 2rem; color:#475569; font-size:1rem; line-height:1.5;">Tendrás que volver a ingresar tus credenciales para acceder a tus ofertas y ajustes personalizadas.</p>
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <a href="{% url 'logout' %}" style="display:block; width:100%; padding:0.875rem; background:#ef4444; color:white; font-size:1rem; font-weight:700; border-radius:0.75rem; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Sí, cerrar sesión</a>
+                    <button onclick="closeLogoutModal()" style="width:100%; padding:0.875rem; background:white; color:#64748b; font-size:1rem; font-weight:700; border:1px solid #e2e8f0; border-radius:0.75rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <!-- ══════════════════════════════════════════════════════════
      AUTH MODAL — Login / Registro flotante
@@ -468,14 +557,67 @@ function openAuthModal(tab) {
 function closeAuthModal() {
     const modal = document.getElementById('authModal');
     modal.classList.add('auth-closing');
-    // Wait for animation to fully finish, then hide (380ms anim + 10ms buffer)
     setTimeout(() => {
         modal.style.display = 'none';
         modal.classList.remove('auth-closing');
         document.body.style.overflow = '';
     }, 300);
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
+
+// ── Side Menu & Logout Controllers ─────────────────────────
+function openSideMenu() {
+    const modal = document.getElementById('sideMenuModal');
+    modal.classList.remove('side-closing');
+    const panel = document.getElementById('sideMenuPanel');
+    panel.style.animation = 'none'; void panel.offsetWidth; panel.style.animation = ''; // Reflow
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSideMenu() {
+    const modal = document.getElementById('sideMenuModal');
+    modal.classList.add('side-closing');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.classList.remove('side-closing');
+        document.body.style.overflow = '';
+    }, 280);
+}
+
+function openLogoutModal() {
+    closeSideMenu(); // Cerramos el panel lateral antes de abrir est
+    const wrapper = document.getElementById('logoutModalWrapper');
+    wrapper.classList.remove('auth-closing');
+    const panel = document.getElementById('logoutPanel');
+    panel.className = "logout-anim-in"; // Inyectamos animacion de entrada
+    wrapper.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLogoutModal() {
+    const wrapper = document.getElementById('logoutModalWrapper');
+    wrapper.classList.add('auth-closing');
+    const panel = document.getElementById('logoutPanel');
+    panel.className = "logout-anim-out"; // Inyectamos animacion de salida
+    setTimeout(() => {
+        wrapper.style.display = 'none';
+        wrapper.classList.remove('auth-closing');
+        document.body.style.overflow = '';
+    }, 280);
+}
+
+// Cerrar modales con tecla Escape Globalmente
+document.addEventListener('keydown', e => { 
+    if (e.key === 'Escape') {
+        const side = document.getElementById('sideMenuModal');
+        const lout = document.getElementById('logoutModalWrapper');
+        const auth = document.getElementById('authModal');
+        
+        if (lout && lout.style.display === 'flex') closeLogoutModal();
+        else if (side && side.style.display === 'flex') closeSideMenu();
+        else if (auth && auth.style.display === 'flex') closeAuthModal();
+    }
+});
 
 function switchTab(tab) {
     const isLogin = tab === 'login';
