@@ -378,60 +378,21 @@
 
 {% if request.user.is_authenticated and request.user.profile.role == 'postulante' and tiene_preferencias %}
 <section class="job-section container" style="margin-top: 2rem;">
-    <h2 class="job-section-title">
-        <span style="font-size: 2rem; margin-right: 0.5rem;">✨</span> 
-        Para ti
-        <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted); margin-left: auto;">Basado en tus preferencias</span>
-    </h2>
-    <div class="jobs-grid">
-        {% for oferta in recomendaciones %}
-        <div class="job-card" id="job-card-rec-{{ oferta.id }}">
-            <div class="job-icon-header">
-                <div class="job-icon" style="overflow: hidden; background: var(--bg-card);">
-                    {% if oferta.empresa.empresa_logo %}
-                        <img src="{{ oferta.empresa.empresa_logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
-                    {% elif oferta.empresa.foto_perfil %}
-                        <img src="{{ oferta.empresa.foto_perfil.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
-                    {% else %}
-                        <span style="font-weight: 800; color: var(--primary-color);">{{ oferta.empresa.empresa_nombre|make_list|first|default:"E" }}</span>
-                    {% endif %}
-                </div>
-                <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span class="badge badge-green" style="font-size: 0.75rem;">NUEVA</span>
-                    <div class="job-options-menu">
-                        <button class="job-options-btn" onclick="toggleJobMenu(event, 'rec-{{ oferta.id }}')" style="font-weight: bold; letter-spacing: 1px;">⋯</button>
-                        <div class="job-options-dropdown" id="jobMenu-rec-{{ oferta.id }}">
-                            {% if oferta.id in guardadas_ids %}
-                            <button class="job-option-item" onclick="guardarOferta(this, {{ oferta.id }})" style="color:#10b981;">✅ Guardado</button>
-                            {% else %}
-                            <button class="job-option-item" onclick="guardarOferta(this, {{ oferta.id }})">🔖 Guardar oferta</button>
-                            {% endif %}
-                            <a href="{% url 'perfil' %}?id={{ oferta.empresa.id }}" class="job-option-item" style="text-decoration:none;">🏢 Acerca de esta empresa</a>
-                            <button class="job-option-item discard" onclick="descartarOferta(this, {{ oferta.id }})">👁️ No me interesa</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <h3 class="job-title">{{ oferta.titulo }}</h3>
-            <div class="job-company" style="font-weight: 600;">{{ oferta.empresa.empresa_nombre }}</div>
-            <div class="job-details" style="flex-wrap: wrap;">
-                <span>📍 {{ oferta.ubicacion|default:"No especificada" }}</span>
-                <span>💼 {{ oferta.get_modalidad_display }}</span>
-                <span style="background:rgba(124,58,237,0.15); color:#a78bfa; padding:0.2rem 0.6rem; border-radius:999px; font-size:0.75rem; font-weight:600;">🏷️ {{ oferta.get_etiqueta_display }}</span>
-                {% if oferta.sueldo %}
-                    <span style="color: var(--primary-color); font-weight: 600;">💵 {{ oferta.sueldo }}</span>
-                {% endif %}
-            </div>
-            <!-- Job detail / apply button -->
-            <a href="{% url 'detalle_oferta' oferta.id %}" class="btn btn-primary" style="width: 100%; font-weight: 600; text-align: center; display: block; text-decoration: none;">Ver Detalles →</a>
+    <div class="job-section-header">
+        <div>
+            <h2 class="job-section-title">
+                <span style="font-size: 2rem; margin-right: 0.5rem;">✨</span> 
+                Para ti
+                <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted); margin-left: 0.5rem;">Basado en tus preferencias</span>
+            </h2>
         </div>
-        {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: 1rem; border: 1px dashed var(--border-color);">
-            <div style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5;">📭</div>
-            <h3 style="color: var(--text-main); margin-bottom: 0.5rem; font-size: 1.2rem;">Sin recomendaciones</h3>
-            <p style="color: var(--text-muted); font-size: 1rem;">No hay ofertas activas con las etiquetas seleccionadas o ya has postulado a todas ellas.</p>
-        </div>
-        {% endfor %}
+        <button id="btnRefreshRecs" onclick="refreshRecomendaciones(this)" class="btn" style="background:var(--bg-main); border:1px solid var(--border-color); color:var(--text-main); font-weight:600; display:flex; align-items:center; gap:0.5rem; transition: background 0.2s;">
+            <span class="refresh-icon">🔄</span> Refrescar
+        </button>
+    </div>
+    
+    <div class="jobs-grid" id="recsGrid">
+        {% include 'core/_recomendaciones_partial.html' %}
     </div>
 </section>
 {% endif %}
@@ -452,7 +413,46 @@
 {% endif %}
 
 <div id="csrf-form" style="display:none;">{% csrf_token %}</div>
+<style>
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.spin-anim { display: inline-block; animation: spin 1s linear infinite; }
+</style>
 <script>
+async function refreshRecomendaciones(btn) {
+    if(btn.disabled) return;
+    
+    // UI Loading state
+    btn.disabled = true;
+    const icon = btn.querySelector('.refresh-icon');
+    if(icon) icon.classList.add('spin-anim');
+    
+    const recsGrid = document.getElementById('recsGrid');
+    if(recsGrid) recsGrid.style.opacity = '0.5';
+    
+    try {
+        const csrfToken = document.querySelector('#csrf-form input').value;
+        const res = await fetch("{% url 'refrescar_recomendaciones' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (res.ok) {
+            const htmlText = await res.text();
+            if(recsGrid) {
+                recsGrid.innerHTML = htmlText;
+            }
+        }
+    } catch(err) {
+        console.error("Error al refrescar recomendaciones:", err);
+    } finally {
+        btn.disabled = false;
+        if(icon) icon.classList.remove('spin-anim');
+        if(recsGrid) recsGrid.style.opacity = '1';
+    }
+}
 function toggleJobMenu(e, id) {
     e.preventDefault();
     e.stopPropagation();

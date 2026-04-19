@@ -484,6 +484,27 @@ def restaurar_oferta(request, oferta_id):
     return JsonResponse({'status': 'restaurado'})
 
 @login_required
+@require_POST
+def refrescar_recomendaciones(request):
+    user_profile = request.user.profile
+    if user_profile.role != 'postulante':
+        return JsonResponse({'error': 'Solo postulantes'}, status=403)
+        
+    recomendaciones = []
+    if user_profile.preferencias_etiquetas:
+        tags = [t.strip() for t in user_profile.preferencias_etiquetas.split(',') if t.strip()]
+        if tags:
+            descartadas = EmpleoDescartado.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True)
+            recomendaciones = Oferta.objects.filter(estado=True, etiqueta__in=tags).exclude(id__in=descartadas).order_by('?')[:3]
+            
+    guardadas_ids = list(EmpleoGuardado.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True))
+    
+    return render(request, 'core/_recomendaciones_partial.html', {
+        'recomendaciones': recomendaciones,
+        'guardadas_ids': guardadas_ids
+    })
+
+@login_required
 def preferencias(request):
     if request.user.profile.role != 'postulante':
         messages.error(request, 'Solo los postulantes tienen preferencias.')

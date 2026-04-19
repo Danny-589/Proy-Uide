@@ -17,6 +17,7 @@ urlpatterns = [
     path('oferta/guardar/<int:oferta_id>/', views.toggle_guardar_empleo, name='toggle_guardar_empleo'),
     path('oferta/descartar/<int:oferta_id>/', views.descartar_oferta, name='descartar_oferta'),
     path('oferta/restaurar/<int:oferta_id>/', views.restaurar_oferta, name='restaurar_oferta'),
+    path('oferta/refrescar-recomendaciones/', views.refrescar_recomendaciones, name='refrescar_recomendaciones'),
     path('perfil/eliminar-cv/', views.eliminar_cv, name='eliminar_cv'),
     path('perfil/crear-oferta/', views.crear_oferta, name='crear_oferta'),
     path('oferta/editar/<int:oferta_id>/', views.editar_oferta, name='editar_oferta'),
