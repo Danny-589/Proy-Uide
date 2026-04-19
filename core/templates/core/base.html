@@ -37,7 +37,7 @@
                 </a>
             </div>
             <!-- Django backend authentication handling navigation -->
-            <div class="nav-links">
+            <div class="nav-links hide-on-mobile">
                 <a href="{% url 'index' %}">Inicio</a>
                 {% if not user.is_authenticated or user.profile.role != 'empresa' %}
                 <a href="{% url 'buscar_empleos' %}">Buscar empleos</a>
@@ -45,7 +45,8 @@
                 {% if user.is_authenticated and user.profile.role == 'empresa' %}
                 <a href="{% url 'dashboard' %}">Mi Tablero</a>
                 {% endif %}
-                <div class="nav-auth-links" style="margin-left: 1rem; display: flex; align-items: center; gap: 1rem;">
+            </div>
+            <div class="nav-auth-links">
                     {% if user.is_authenticated %}
                     <a href="{% url 'perfil' %}"
                         style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; text-decoration: none; color: var(--text-main);">
@@ -58,7 +59,7 @@
                             {{ user.username|make_list|first|upper }}
                         </div>
                         {% endif %}
-                        <span>{{ user.profile.nombre_visualizacion|default:user.username }}</span>
+                        <span class="hide-on-mobile">{{ user.profile.nombre_visualizacion|default:user.username }}</span>
                     </a>
                     {% else %}
                     <button onclick="openAuthModal('login')" style="font-weight:500; background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-main); padding:0;">Iniciar sesión</button>
@@ -298,6 +299,25 @@
                 <h3 style="font-size:1.25rem; font-weight:700; color:var(--text-main); margin:0;">Menú</h3>
                 <button onclick="closeSideMenu()" style="background:var(--bg-main); border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:background 0.2s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-main)'">✕</button>
             </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">Navegación</h4>
+                <a href="{% url 'index' %}" style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:0.75rem 1rem; border:none; background:none; cursor:pointer; border-radius:0.5rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:500; text-decoration:none;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
+                    <span>🏠</span> Inicio
+                </a>
+                {% if not user.is_authenticated or user.profile.role != 'empresa' %}
+                <a href="{% url 'buscar_empleos' %}" style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:0.75rem 1rem; border:none; background:none; cursor:pointer; border-radius:0.5rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:500; text-decoration:none;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
+                    <span>🔍</span> Buscar empleos
+                </a>
+                {% endif %}
+                {% if user.is_authenticated and user.profile.role == 'empresa' %}
+                <a href="{% url 'dashboard' %}" style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:0.75rem 1rem; border:none; background:none; cursor:pointer; border-radius:0.5rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:500; text-decoration:none;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
+                    <span>📊</span> Mi Tablero
+                </a>
+                {% endif %}
+            </div>
+            
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">Ajustes</h4>
             
             {% if user.is_authenticated %}
             <a href="{% url 'configuracion' %}" style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:1rem; border:none; background:none; cursor:pointer; border-radius:0.75rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:600; margin-bottom:0.5rem; text-decoration:none;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">

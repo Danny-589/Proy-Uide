@@ -107,6 +107,12 @@
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
 }
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .search-input-group { flex-direction: column; align-items: stretch; gap: 1rem; }
+    .job-grid { grid-template-columns: 1fr; }
+    .jobs-grid { grid-template-columns: 1fr; }
+}
 
 /* Wait, JS renders job cards. I need to make sure the style.css target the JS output correctly, or define them here */
 .job-card {

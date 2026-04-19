@@ -414,3 +414,50 @@ main {
 .close-btn:hover {
     color: var(--text-main);
 }
+
+/* =========================================
+   RESPONSIVE (MOBILES/TABLETS)
+   ========================================= */
+@media (max-width: 1024px) {
+    .sidebar-layout {
+        grid-template-columns: 1fr;
+    }
+    .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem;
+    }
+    .dashboard-main {
+        padding: 1.5rem 1rem;
+    }
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .footer-col {
+        grid-column: span 1 !important;
+    }
+    .footer-bottom {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+    .modal-content {
+        padding: 1.5rem;
+        width: 95%;
+    }
+    
+    /* Utility class for hiding on mobile */
+    .hide-on-mobile {
+        display: none !important;
+    }
+}
