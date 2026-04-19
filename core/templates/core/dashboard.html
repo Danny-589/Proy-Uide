@@ -309,7 +309,7 @@ body { background-color: var(--bg-main); }
 
 <div class="dashboard-layout">
     
-    {% if request.user.profile.role == 'empresa' %}
+
     <!-- ==============================================
          VISTA OFERTANTE (Employer Dashboard)
          ============================================== -->
@@ -387,77 +387,7 @@ body { background-color: var(--bg-main); }
             </div>
         </div>
     </div>
-    {% else %}
-    <!-- ==============================================
-         VISTA POSTULANTE (Job Seeker Dashboard)
-         ============================================== -->
-    <div id="dashboardPostulante">
-        <div class="dashboard-header-post">
-            <div class="dashboard-title-post">
-                <h2 id="dashTitlePost">Resumen de actividad</h2>
-                <p>Bienvenido de nuevo. Estas son tus notificaciones más recientes.</p>
-            </div>
-            <div>
-                <a href="{% url 'editar_perfil' %}" class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem; font-size:1rem; padding:0.75rem 1.5rem; text-decoration:none;">
-                    ✎ Editar Perfil
-                </a>
-            </div>
-        </div>
 
-        <div class="stats-grid-post">
-            <div class="stat-card-post">
-                <div class="stat-trend up">📈 +20%</div>
-                <div class="stat-icon-post" style="background:rgba(59,130,246,0.15); color:#3b82f6;">➤</div>
-                <div class="stat-label-post">Postulaciones activas</div>
-                <div class="stat-value-post" id="statPostulaciones">0</div>
-            </div>
-            <div class="stat-card-post">
-                <div class="stat-trend up">📈 +5%</div>
-                <div class="stat-icon-post" style="background:rgba(168,85,247,0.15); color:#a855f7;">👁</div>
-                <div class="stat-label-post">Vistas de perfil</div>
-                <div class="stat-value-post" id="statVistas">0</div>
-            </div>
-            <div class="stat-card-post">
-                <div class="stat-trend neutral">Sin cambios</div>
-                <div class="stat-icon-post" style="background:rgba(245,158,11,0.15); color:#f59e0b;">📅</div>
-                <div class="stat-label-post">Entrevistas</div>
-                <div class="stat-value-post">0</div>
-            </div>
-            <div class="stat-card-post">
-                <a href="#" class="stat-trend" style="color:var(--primary-color);">Ver guardados</a>
-                <div class="stat-icon-post" style="background:rgba(16,185,129,0.15); color:#10b981;">🔖</div>
-                <div class="stat-label-post">Ofertas guardadas</div>
-                <div class="stat-value-post" id="statGuardadas">0</div>
-            </div>
-        </div>
-
-        <div class="main-grid-post">
-            <div class="main-content-left">
-                <div class="section-header-post">
-                    <h3>Empleos recomendados</h3>
-                    <a href="{% url 'index' %}">Buscar empleos →</a>
-                </div>
-                
-                <div class="jobs-rec-list" id="recommendedJobsList">
-                    <div style="text-align:center; padding:3rem; background:var(--bg-card); border-radius:1rem; border:1px dashed var(--border-color);">
-                        <p style="color:var(--text-muted); margin: 0;">Pronto verás empleos aquí. <br><a href="{% url 'index' %}">Ir al portal de búsqueda</a></p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="main-content-right">
-                <!-- Búsqueda rápida -->
-                <div class="side-card">
-                    <h4><span style="color:var(--primary-color);">⚡</span> Búsqueda rápida</h4>
-                    <form action="{% url 'index' %}" method="GET">
-                        <input type="text" name="q" placeholder="🔍 Cargo o empresa...">
-                        <button type="submit" class="btn btn-primary w-full mt-2" style="font-size:1rem; padding:0.875rem;">Buscar ahora</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
 </div>
 

@@ -15,6 +15,8 @@ class Profile(models.Model):
     telefono = models.CharField(max_length=20, blank=True)
     hoja_de_vida = models.FileField(upload_to='cvs/', null=True, blank=True)
     requiere_2fa = models.BooleanField(default=False, verbose_name="Verificación en dos pasos")
+    preferencias_etiquetas = models.TextField(blank=True, default='', verbose_name="Preferencias de etiquetas", help_text="Etiquetas separadas por comas")
+    
     
     # --- Nuevos campos para Empresa ---
     empresa_nombre = models.CharField(max_length=255, blank=True)
@@ -136,6 +138,31 @@ class Postulacion(models.Model):
 
     def __str__(self):
         return f"{self.postulante.user.username} aplica a {self.oferta.titulo}"
+
+class EmpleoGuardado(models.Model):
+    postulante = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='empleos_guardados')
+    oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE, related_name='guardados_por')
+    fecha_guardado = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('postulante', 'oferta')
+        ordering = ['-fecha_guardado']
+
+    def __str__(self):
+        return f"{self.postulante.user.username} guardó {self.oferta.titulo}"
+
+class EmpleoDescartado(models.Model):
+    postulante = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='empleos_descartados')
+    oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE, related_name='descartados_por')
+    fecha_descarte = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('postulante', 'oferta')
+        ordering = ['-fecha_descarte']
+
+    def __str__(self):
+        return f"{self.postulante.user.username} descartó {self.oferta.titulo}"
+
 
 class OfertaFoto(models.Model):
     oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE, related_name='fotos')

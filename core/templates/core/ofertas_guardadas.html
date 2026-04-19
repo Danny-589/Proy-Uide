@@ -1,0 +1,159 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+.dashboard-layout {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+.page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+.page-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+.job-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.job-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.job-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    background: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.job-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+}
+.job-info {
+    flex: 1;
+}
+.job-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.job-empresa {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+.job-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.tag {
+    background: var(--bg-main);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-full);
+}
+.job-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+</style>
+
+<div class="dashboard-layout">
+    <h1 class="page-title">Ofertas Guardadas</h1>
+    <p class="page-subtitle">Aquí encontrarás las ofertas de empleo que has marcado para revisar más tarde.</p>
+
+    <div class="jobs-list">
+        {% for guardado in empleos_guardados %}
+        <div class="job-card" id="guardado-{{ guardado.oferta.id }}">
+            <div class="job-logo">
+                {% if guardado.oferta.empresa.empresa_logo %}
+                <img src="{{ guardado.oferta.empresa.empresa_logo.url }}" alt="Logo">
+                {% else %}
+                <span style="font-size: 1.5rem;">🏢</span>
+                {% endif %}
+            </div>
+            <div class="job-info">
+                <a href="{% url 'detalle_oferta' guardado.oferta.id %}" style="text-decoration:none; color:inherit;">
+                    <h3 class="job-title">{{ guardado.oferta.titulo }}</h3>
+                </a>
+                <div class="job-empresa">{{ guardado.oferta.empresa.empresa_nombre|default:guardado.oferta.empresa.nombre_visualizacion }} • {{ guardado.oferta.ubicacion }}</div>
+                <div class="job-tags">
+                    {% if guardado.oferta.modalidad %}<span class="tag">{{ guardado.oferta.get_modalidad_display }}</span>{% endif %}
+                    {% if guardado.oferta.tipo_contrato %}<span class="tag">{{ guardado.oferta.get_tipo_contrato_display }}</span>{% endif %}
+                </div>
+            </div>
+            <div class="job-actions">
+                <a href="{% url 'detalle_oferta' guardado.oferta.id %}" class="btn btn-primary" style="padding:0.5rem 1rem; font-size:0.875rem;">Ver Oferta</a>
+                <button onclick="toggleGuardar({{ guardado.oferta.id }})" class="btn" style="padding:0.5rem 1rem; font-size:0.875rem; background:#fee2e2; color:#ef4444; border:1px solid #fecaca;">Eliminar de guardados</button>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align:center; padding:4rem 2rem; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border-color);">
+            <div style="font-size:3rem; margin-bottom:1rem;">🔖</div>
+            <h3 style="font-size:1.25rem; font-weight:700; margin-bottom:0.5rem;">No tienes ofertas guardadas</h3>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">Explora los empleos disponibles y guarda los que más te interesen.</p>
+            <a href="{% url 'buscar_empleos' %}" class="btn btn-primary">Buscar empleos</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="csrf-form" style="display:none;">{% csrf_token %}</div>
+<script>
+async function toggleGuardar(ofertaId) {
+    const btn = event.currentTarget;
+    btn.disabled = true;
+    
+    try {
+        const csrfToken = document.querySelector('#csrf-form input').value;
+        const url = `/oferta/guardar/${ofertaId}/`;
+        // Fetch to backend
+        fetch(`/oferta/guardar/${ofertaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(res => res.json()).then(data => {
+            if(data.status === 'desguardado'){
+                const card = document.getElementById(`guardado-${ofertaId}`);
+                if(card) {
+                    card.style.transition = 'opacity 0.3s ease';
+                    card.style.opacity = '0';
+                    setTimeout(() => card.remove(), 300);
+                }
+            } else {
+                // If there's an error
+                btn.disabled = false;
+            }
+        });
+    } catch(err) {
+        console.error(err);
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

@@ -123,7 +123,7 @@ body {
     box-shadow: var(--shadow-sm);
     border-color: #cbd5e1;
 }
-.job-logo {
+.job-icon {
     width: 64px;
     height: 64px;
     border-radius: var(--radius-md);
@@ -135,6 +135,65 @@ body {
     color: var(--text-muted);
     font-size: 1.5rem;
     flex-shrink: 0;
+}
+
+/* Dots Map Menu */
+.job-options-menu {
+    position: relative;
+    display: inline-block;
+}
+.job-options-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-md);
+    line-height: 1;
+}
+.job-options-btn:hover {
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+.job-options-dropdown {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    min-width: 160px;
+    padding: 0.5rem 0;
+}
+.job-options-dropdown.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+.job-option-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    font-size: 0.875rem;
+    color: var(--text-main);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.job-option-item:hover {
+    background: var(--bg-main);
+}
+.job-option-item.discard {
+    color: #ef4444; 
 }
 .job-info-main {
     flex: 1;
@@ -309,8 +368,8 @@ body {
 
         <div class="jobs-list" id="searchJobsList">
             {% for oferta in ofertas %}
-            <div class="job-card-h">
-                <div class="job-logo">
+            <div class="job-card-h" id="job-card-{{ oferta.id }}">
+                <div class="job-icon">
                     {% if oferta.empresa.empresa_logo %}
                         <img src="{{ oferta.empresa.empresa_logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover; border-radius: var(--radius-md);">
                     {% elif oferta.empresa.foto_perfil %}
@@ -320,9 +379,25 @@ body {
                     {% endif %}
                 </div>
                 <div class="job-info-main">
-                    <div class="job-h-title">
-                        <h3>{{ oferta.titulo }}</h3>
-                        <span class="badge badge-green" style="font-size:0.625rem; font-weight:700;">NUEVO</span>
+                    <div class="job-h-title" style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <h3>{{ oferta.titulo }}</h3>
+                            <span class="badge badge-green" style="font-size:0.625rem; font-weight:700;">NUEVO</span>
+                        </div>
+                        {% if request.user.is_authenticated and request.user.profile.role == 'postulante' %}
+                        <div class="job-options-menu">
+                            <button class="job-options-btn" onclick="toggleJobMenu(event, {{ oferta.id }})" style="font-weight: bold; letter-spacing: 1px;">⋯</button>
+                            <div class="job-options-dropdown" id="jobMenu-{{ oferta.id }}">
+                                {% if oferta.id in guardadas_ids %}
+                                <button class="job-option-item" onclick="guardarOferta(this, {{ oferta.id }})" style="color:#10b981;">✅ Guardado</button>
+                                {% else %}
+                                <button class="job-option-item" onclick="guardarOferta(this, {{ oferta.id }})">🔖 Guardar oferta</button>
+                                {% endif %}
+                                <a href="{% url 'perfil' %}?id={{ oferta.empresa.id }}" class="job-option-item" style="text-decoration:none;">🏢 Acerca de esta empresa</a>
+                                <button class="job-option-item discard" onclick="descartarOferta(this, {{ oferta.id }})">👁️ No me interesa</button>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="job-h-company">
                         {{ oferta.empresa.empresa_nombre }} <span>• {{ oferta.ubicacion|default:"Locación no especificada" }}</span>
@@ -364,4 +439,74 @@ body {
 
     </main>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<div id="csrf-form" style="display:none;">{% csrf_token %}</div>
+<script>
+function toggleJobMenu(e, id) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelectorAll('.job-options-dropdown').forEach(d => {
+        if (d.id !== 'jobMenu-' + id) d.classList.remove('show');
+    });
+    document.getElementById('jobMenu-' + id).classList.toggle('show');
+}
+document.addEventListener('click', () => {
+    document.querySelectorAll('.job-options-dropdown').forEach(d => d.classList.remove('show'));
+});
+
+async function guardarOferta(btn, ofertaId) {
+    btn.disabled = true;
+    try {
+        const csrfToken = document.querySelector('#csrf-form input').value;
+        const res = await fetch(`/oferta/guardar/${ofertaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const data = await res.json();
+        if(data.status === 'guardado'){
+            btn.innerHTML = '✅ Guardado';
+            btn.style.color = '#10b981';
+        } else if(data.status === 'desguardado') {
+            btn.innerHTML = '🔖 Guardar oferta';
+            btn.style.color = 'var(--text-main)';
+        }
+    } catch(err) {
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function descartarOferta(btn, ofertaId) {
+    btn.disabled = true;
+    try {
+        const csrfToken = document.querySelector('#csrf-form input').value;
+        const res = await fetch(`/oferta/descartar/${ofertaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const data = await res.json();
+        if(data.status === 'descartado') {
+            const card = document.getElementById(`job-card-${ofertaId}`);
+            if(card) {
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.remove(), 300);
+            }
+        }
+    } catch(err) {
+        console.error(err);
+        btn.disabled = false;
+    }
+}
+</script>
 {% endblock %}

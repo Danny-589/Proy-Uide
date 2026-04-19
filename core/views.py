@@ -10,7 +10,7 @@ from django.core.mail import send_mail
 import json
 import random
 from django.utils import timezone
-from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto, ConfiguracionPlataforma
+from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto, ConfiguracionPlataforma, EmpleoGuardado, EmpleoDescartado
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
@@ -60,22 +60,39 @@ def index(request):
         ofertas = ofertas.filter(q_obj).distinct()
     if ubicacion:
         ofertas = ofertas.filter(ubicacion__unaccent__icontains=ubicacion)
+
+    recomendaciones = []
+    if user_profile and user_profile.role == 'postulante':
+        descartadas = EmpleoDescartado.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True)
+        ofertas = ofertas.exclude(id__in=descartadas)
+        
+        # Calcular recomendaciones
+        if user_profile.preferencias_etiquetas:
+            tags = [t.strip() for t in user_profile.preferencias_etiquetas.split(',') if t.strip()]
+            if tags:
+                tiene_preferencias = True
+                recomendaciones = Oferta.objects.filter(estado=True, etiqueta__in=tags).exclude(id__in=descartadas).order_by('-fecha_publicacion')[:3]
         
     ofertas = ofertas.order_by('-fecha_publicacion')[:6]
     
     # Extraer postulaciones del usuario si es postulante
     mis_postulaciones = []
     postulaciones_ids = []
+    guardadas_ids = []
     if user_profile and user_profile.role == 'postulante':
         mis_postulaciones = Postulacion.objects.filter(postulante=user_profile).select_related('oferta', 'oferta__empresa').order_by('-fecha_postulacion')
         postulaciones_ids = list(mis_postulaciones.values_list('oferta_id', flat=True))
+        guardadas_ids = list(EmpleoGuardado.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True))
 
     return render(request, 'core/index.html', {
         'ofertas': ofertas,
         'q': query,
         'u': ubicacion,
         'mis_postulaciones': mis_postulaciones,
-        'postulaciones_ids': postulaciones_ids
+        'postulaciones_ids': postulaciones_ids,
+        'guardadas_ids': guardadas_ids,
+        'recomendaciones': recomendaciones,
+        'tiene_preferencias': locals().get('tiene_preferencias', False)
     })
 
 def registro(request):
@@ -390,6 +407,10 @@ def ajax_cambiar_password(request):
 
 @login_required
 def dashboard(request):
+    if request.user.profile.role != 'empresa':
+        messages.info(request, 'El panel de control es exclusivo para empresas.')
+        return redirect('index')
+        
     context = {}
     if request.user.profile.role == 'empresa':
         postulantes_ids = Postulacion.objects.filter(oferta__empresa=request.user.profile).values_list('postulante_id', flat=True).distinct()
@@ -412,6 +433,81 @@ def dashboard(request):
         }
         
     return render(request, 'core/dashboard.html', context)
+
+@login_required
+@require_POST
+def toggle_guardar_empleo(request, oferta_id):
+    if request.user.profile.role != 'postulante':
+        return JsonResponse({'error': 'Solo los postulantes pueden guardar ofertas'}, status=403)
+        
+    oferta = get_object_or_404(Oferta, id=oferta_id)
+    guardado, created = EmpleoGuardado.objects.get_or_create(postulante=request.user.profile, oferta=oferta)
+    
+    if created:
+        return JsonResponse({'status': 'guardado', 'message': 'Oferta guardada correctamente.'})
+    else:
+        guardado.delete()
+        return JsonResponse({'status': 'desguardado', 'message': 'Oferta eliminada de guardados.'})
+
+@login_required
+def ofertas_guardadas(request):
+    if request.user.profile.role != 'postulante':
+        messages.error(request, 'Solo los postulantes tienen ofertas guardadas.')
+        return redirect('index')
+        
+    empleos = EmpleoGuardado.objects.filter(postulante=request.user.profile).select_related('oferta', 'oferta__empresa')
+    
+    return render(request, 'core/ofertas_guardadas.html', {
+        'empleos_guardados': empleos
+    })
+
+@login_required
+@require_POST
+def descartar_oferta(request, oferta_id):
+    if request.user.profile.role != 'postulante':
+        return JsonResponse({'error': 'Solo los postulantes pueden descartar ofertas'}, status=403)
+        
+    oferta = get_object_or_404(Oferta, id=oferta_id)
+    EmpleoDescartado.objects.get_or_create(postulante=request.user.profile, oferta=oferta)
+    
+    # Si estaba guardada, la eliminamos de guardadas por coherencia
+    EmpleoGuardado.objects.filter(postulante=request.user.profile, oferta=oferta).delete()
+    
+    return JsonResponse({'status': 'descartado', 'message': 'Oferta descartada exitosamente.'})
+
+@login_required
+@require_POST
+def restaurar_oferta(request, oferta_id):
+    if request.user.profile.role != 'postulante':
+        return JsonResponse({'error': 'Solo postulantes'}, status=403)
+    EmpleoDescartado.objects.filter(postulante=request.user.profile, oferta_id=oferta_id).delete()
+    return JsonResponse({'status': 'restaurado'})
+
+@login_required
+def preferencias(request):
+    if request.user.profile.role != 'postulante':
+        messages.error(request, 'Solo los postulantes tienen preferencias.')
+        return redirect('index')
+        
+    profile = request.user.profile
+    if request.method == 'POST':
+        tags = request.POST.getlist('etiquetas')
+        profile.preferencias_etiquetas = ','.join(tags)
+        profile.save()
+        messages.success(request, 'Tus preferencias han sido actualizadas.')
+        return redirect('preferencias')
+        
+    descartadas = EmpleoDescartado.objects.filter(postulante=profile).select_related('oferta', 'oferta__empresa')
+    # Use Oferta.ETIQUETA_CHOICES
+    from .models import Oferta
+    etiquetas_choices = Oferta.ETIQUETA_CHOICES
+    user_tags = [t.strip() for t in profile.preferencias_etiquetas.split(',')] if profile.preferencias_etiquetas else []
+    
+    return render(request, 'core/preferencias.html', {
+        'descartadas': descartadas,
+        'etiquetas_choices': etiquetas_choices,
+        'user_tags': user_tags,
+    })
 
 def empleo(request):
     return render(request, 'core/empleo.html')
@@ -437,12 +533,20 @@ def buscar_empleos(request):
     if mod:
         ofertas = ofertas.filter(modalidad=mod)
 
+    user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
+    
+    if user_profile and user_profile.role == 'postulante':
+        descartadas = EmpleoDescartado.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True)
+        ofertas = ofertas.exclude(id__in=descartadas)
+
     ofertas = ofertas.order_by('-fecha_publicacion')
 
     postulaciones_ids = []
+    guardadas_ids = []
     user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
     if user_profile and user_profile.role == 'postulante':
         postulaciones_ids = list(Postulacion.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True))
+        guardadas_ids = list(EmpleoGuardado.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True))
 
     ofertas = list(ofertas)
     total = len(ofertas)
@@ -453,6 +557,7 @@ def buscar_empleos(request):
         'cat': cat,
         'mod': mod,
         'postulaciones_ids': postulaciones_ids,
+        'guardadas_ids': guardadas_ids,
         'total_vacantes': total
     })
 
@@ -790,14 +895,17 @@ def detalle_oferta(request, oferta_id):
     fotos = oferta.fotos.all()
     
     ya_postulo = False
+    guardada = False
     user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
     if user_profile and user_profile.role == 'postulante':
         ya_postulo = Postulacion.objects.filter(postulante=user_profile, oferta=oferta).exists()
+        guardada = EmpleoGuardado.objects.filter(postulante=user_profile, oferta=oferta).exists()
     
     return render(request, 'core/detalle_oferta.html', {
         'oferta': oferta,
         'fotos': fotos,
         'ya_postulo': ya_postulo,
+        'guardada': guardada,
         'user_profile': user_profile,
     })
 

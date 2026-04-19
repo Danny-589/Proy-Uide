@@ -1,0 +1,186 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+.dashboard-layout {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+.page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+.page-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Two column layout */
+.pref-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+@media (max-width: 800px) {
+    .pref-grid { grid-template-columns: 1fr; }
+}
+
+.pref-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+}
+.pref-panel h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+}
+
+.tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.5rem;
+}
+
+.tag-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+.tag-checkbox-group input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+/* Job Cards */
+.discarded-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.d-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.d-card.restaurada {
+    opacity: 0;
+    transform: scale(0.95);
+}
+.d-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+.d-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+</style>
+
+<div class="dashboard-layout">
+    <h1 class="page-title">✨ Mis Preferencias</h1>
+    <p class="page-subtitle">Gestiona qué ofertas deseas visualizar en el inicio y recupera ofertas descartadas.</p>
+
+    <div class="pref-grid">
+        
+        <!-- Panel 1: Etiquetas -->
+        <div class="pref-panel">
+            <h3>🏷️ Intereses y Categorías</h3>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                Selecciona las categorías en las que estás interesado. Te recomendaremos ofertas en tu página principal "Para ti".
+            </p>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="tags-grid">
+                    {% for value, label in etiquetas_choices %}
+                    <label class="tag-checkbox-group">
+                        <input type="checkbox" name="etiquetas" value="{{ value }}" 
+                        {% if value in user_tags %}checked{% endif %}>
+                        {{ label }}
+                    </label>
+                    {% endfor %}
+                </div>
+                <div style="margin-top:2rem;">
+                    <button type="submit" class="btn btn-primary">💾 Guardar Preferencias</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Panel 2: Descartados -->
+        <div class="pref-panel">
+            <h3>👁️ Ofertas Ocultadas</h3>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                Ofertas individuales que has marcado como "No me interesa". No te aparecerán de nuevo a menos que las restaures.
+            </p>
+            
+            <div class="discarded-list" id="discardedList">
+                {% if descartadas %}
+                    {% for des in descartadas %}
+                        <div class="d-card" id="des-{{ des.oferta.id }}">
+                            <div class="d-info">
+                                <h4>{{ des.oferta.titulo }}</h4>
+                                <p>{{ des.oferta.empresa.empresa_nombre }} · Marcado el {{ des.fecha_descarte|date:"d M"|default:"Recientemente" }}</p>
+                            </div>
+                            <button onclick="restaurarOferta(this, {{ des.oferta.id }})" class="btn btn-outline" style="white-space:nowrap; border-color:var(--border-color); color:var(--text-main); padding:0.5rem 1rem; font-size:0.85rem;">
+                                ♻️ Restaurar
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center; padding: 2rem;">
+                        <span style="font-size:2.5rem; display:block; margin-bottom:1rem; opacity:0.5;">👻</span>
+                        <h4 style="margin:0; color:var(--text-main);">Sin ofertas ocultadas</h4>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Aquí se guardaran las ofertas que marques "No me interesa".</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+        </div>
+
+    </div>
+</div>
+
+<div id="csrf-form" style="display:none;">{% csrf_token %}</div>
+<script>
+async function restaurarOferta(btn, ofertaId) {
+    btn.disabled = true;
+    try {
+        const csrfToken = document.querySelector('#csrf-form input').value;
+        const res = await fetch(`/oferta/restaurar/${ofertaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const data = await res.json();
+        if(data.status === 'restaurado') {
+            const card = document.getElementById(`des-${ofertaId}`);
+            if(card) {
+                card.classList.add('restaurada');
+                setTimeout(() => card.remove(), 300);
+            }
+        }
+    } catch(err) {
+        console.error(err);
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

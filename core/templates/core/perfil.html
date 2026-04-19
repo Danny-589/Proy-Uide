@@ -636,8 +636,7 @@
                                         </a>
                                     </h4>
                                     <p>
-                                        {% if resena.autor.role == 'empresa' %}🏢 Empresa{% else %}👤 Postulante{% endif
-                                        %}
+                                        {% if resena.autor.role == 'empresa' %}🏢 Empresa{% else %}👤 Postulante{% endif %}
                                         {% if resena.autor.cargo_titulo %} · {{ resena.autor.cargo_titulo }}{% endif %}
                                     </p>
                                 </div>
@@ -660,8 +659,7 @@
                             </div>
                         </div>
                         <div class="review-text">"{{ resena.comentario }}"</div>
-                        <span class="review-date">{{ resena.fecha|date:"d M Y" }}{% if resena.fecha_actualizacion !=
-                            resena.fecha %} · Editado{% endif %}</span>
+                        <span class="review-date">{{ resena.fecha|date:"d M Y" }}{% if resena.fecha_actualizacion|date:"Y-m-d H:i:s" != resena.fecha|date:"Y-m-d H:i:s" %} · Editado{% endif %}</span>
                     </div>
                     {% endfor %}
                     {% else %}
