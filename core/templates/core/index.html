@@ -291,11 +291,10 @@
         </form>
         
         <div class="trending">
-            Tendencias:
-            <span class="trend-tag">Desarrollador</span>
-            <span class="trend-tag">Administración</span>
-            <span class="trend-tag">Ventas</span>
-            <span class="trend-tag">Educación</span>
+            Explorar:
+            {% for etiqueta_key, etiqueta_val in explorar_etiquetas %}
+            <a href="{% url 'buscar_empleos' %}?cat={{ etiqueta_key }}" class="trend-tag" style="text-decoration: none;">{{ etiqueta_val }}</a>
+            {% endfor %}
         </div>
     </div>
 </section>

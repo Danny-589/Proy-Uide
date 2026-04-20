@@ -90,6 +90,10 @@ def index(request):
             estado = clasif_dict.get(app.oferta.empresa_id, 'pendiente')
             app.puede_retirar = (estado == 'pendiente')
 
+    # Etiquetas aleatorias para explorar
+    etiquetas_todas = [e for e in Oferta.ETIQUETA_CHOICES if e[0] != 'otro']
+    etiquetas_aleatorias = random.sample(etiquetas_todas, min(4, len(etiquetas_todas)))
+
     return render(request, 'core/index.html', {
         'ofertas': ofertas,
         'q': query,
@@ -98,7 +102,8 @@ def index(request):
         'postulaciones_ids': postulaciones_ids,
         'guardadas_ids': guardadas_ids,
         'recomendaciones': recomendaciones,
-        'tiene_preferencias': locals().get('tiene_preferencias', False)
+        'tiene_preferencias': locals().get('tiene_preferencias', False),
+        'explorar_etiquetas': etiquetas_aleatorias
     })
 
 def registro(request):

@@ -5,24 +5,70 @@
 body {
     background-color: var(--bg-main);
 }
+.main-flex-wrapper {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+    transition: gap 0.3s ease;
+    padding-top: 1.5rem;
+}
+.main-flex-wrapper.show {
+    gap: 2rem;
+}
+.filters-sidebar {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: width 0.3s ease, opacity 0.3s ease;
+    flex-shrink: 0;
+}
+.filters-sidebar.show {
+    width: 320px;
+    opacity: 1;
+}
+.filters-sidebar-inner {
+    width: 320px;
+    position: sticky;
+    top: 2rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+.filters-card {
+    padding: 1.5rem;
+    background: none;
+    border: none;
+}
 .search-page-layout {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    padding: 2rem 0;
 }
-
-/* Sidebar Styles */
-.filters-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-.filters-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
+@media (max-width: 768px) {
+    .main-flex-wrapper {
+        flex-direction: column;
+        padding-top: 1rem;
+    }
+    .main-flex-wrapper.show {
+        gap: 1.5rem;
+    }
+    .filters-sidebar {
+        width: 100%;
+        max-height: 0;
+        transition: max-height 0.4s ease, opacity 0.3s ease;
+    }
+    .filters-sidebar.show {
+        width: 100%;
+        max-height: 1500px;
+    }
+    .filters-sidebar-inner {
+        width: 100%;
+        position: relative;
+        top: 0;
+    }
 }
 .filters-header {
     display: flex;
@@ -321,59 +367,65 @@ body {
 }
 </style>
 
-<div class="container search-page-layout">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-        <h1 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Buscar Empleos</h1>
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+    <!-- Title Bar -->
+    <div style="display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
         <button id="toggleFiltersBtn" onclick="toggleFilters()" class="btn btn-outline" style="border-color: var(--border-color); color: var(--text-main); font-weight: 600; background: var(--bg-card); display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
             <span id="filtersBtnText">Filtros</span>
         </button>
+        <h1 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Buscar Empleos</h1>
     </div>
 
-    <aside class="filters-sidebar" id="filtersWrapper" style="max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; margin-top: -1rem;">
-        <div class="filters-card">
-            <div class="filters-header">
-                <h3>Opciones de filtrado</h3>
-                <span class="filter-clear">Limpiar</span>
+<div class="main-flex-wrapper" id="mainWrapper">
+    <aside class="filters-sidebar" id="filtersWrapper">
+        <div class="filters-sidebar-inner">
+            <div class="filters-card">
+        <div class="filters-header">
+            <h3>Opciones de filtrado</h3>
+            <button type="button" onclick="toggleFilters()" style="background:none; border:none; font-size:1.75rem; cursor:pointer; color:var(--text-muted); line-height:1;">&times;</button>
+        </div>
+
+        <form method="GET" action="{% url 'buscar_empleos' %}">
+            {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+
+            <div class="filter-group">
+                <div class="filter-title">Categoría</div>
+                <label class="filter-option"><input type="radio" name="cat" value="" {% if not cat %}checked{% endif %}> Todas</label>
+                <label class="filter-option"><input type="radio" name="cat" value="tecnologia" {% if cat == 'tecnologia' %}checked{% endif %}> Tecnología e Informática</label>
+                <label class="filter-option"><input type="radio" name="cat" value="diseño_web" {% if cat == 'diseño_web' %}checked{% endif %}> Diseño Web / UI-UX</label>
+                <label class="filter-option"><input type="radio" name="cat" value="administracion" {% if cat == 'administracion' %}checked{% endif %}> Administración</label>
+                <label class="filter-option"><input type="radio" name="cat" value="ventas" {% if cat == 'ventas' %}checked{% endif %}> Ventas y Marketing</label>
+                <label class="filter-option"><input type="radio" name="cat" value="contabilidad" {% if cat == 'contabilidad' %}checked{% endif %}> Contabilidad</label>
+                <label class="filter-option"><input type="radio" name="cat" value="educacion" {% if cat == 'educacion' %}checked{% endif %}> Educación</label>
+                <label class="filter-option"><input type="radio" name="cat" value="salud" {% if cat == 'salud' %}checked{% endif %}> Salud y Medicina</label>
+                <label class="filter-option"><input type="radio" name="cat" value="ingenieria" {% if cat == 'ingenieria' %}checked{% endif %}> Ingeniería</label>
+                <label class="filter-option"><input type="radio" name="cat" value="logistica" {% if cat == 'logistica' %}checked{% endif %}> Logística</label>
+                <label class="filter-option"><input type="radio" name="cat" value="moda" {% if cat == 'moda' %}checked{% endif %}> Moda y Textil</label>
+                <label class="filter-option"><input type="radio" name="cat" value="gastronomia" {% if cat == 'gastronomia' %}checked{% endif %}> Gastronomía</label>
+                <label class="filter-option"><input type="radio" name="cat" value="legal" {% if cat == 'legal' %}checked{% endif %}> Legal</label>
+                <label class="filter-option"><input type="radio" name="cat" value="recursos_humanos" {% if cat == 'recursos_humanos' %}checked{% endif %}> Recursos Humanos</label>
+                <label class="filter-option"><input type="radio" name="cat" value="otro" {% if cat == 'otro' %}checked{% endif %}> Otro / General</label>
             </div>
 
-            <form method="GET" action="{% url 'buscar_empleos' %}">
-                {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+            <div class="filter-group">
+                <div class="filter-title">Modalidad</div>
+                <label class="filter-option"><input type="radio" name="mod" value="" {% if not mod %}checked{% endif %}> Todas</label>
+                <label class="filter-option"><input type="radio" name="mod" value="presencial" {% if mod == 'presencial' %}checked{% endif %}> Presencial</label>
+                <label class="filter-option"><input type="radio" name="mod" value="remoto" {% if mod == 'remoto' %}checked{% endif %}> Remoto</label>
+                <label class="filter-option"><input type="radio" name="mod" value="hibrido" {% if mod == 'hibrido' %}checked{% endif %}> Híbrido</label>
+            </div>
 
-                <div class="filter-group">
-                    <div class="filter-title">Categoría</div>
-                    <label class="filter-option"><input type="radio" name="cat" value="" {% if not cat %}checked{% endif %}> Todas</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="tecnologia" {% if cat == 'tecnologia' %}checked{% endif %}> Tecnología e Informática</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="diseño_web" {% if cat == 'diseño_web' %}checked{% endif %}> Diseño Web / UI-UX</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="administracion" {% if cat == 'administracion' %}checked{% endif %}> Administración</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="ventas" {% if cat == 'ventas' %}checked{% endif %}> Ventas y Marketing</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="contabilidad" {% if cat == 'contabilidad' %}checked{% endif %}> Contabilidad</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="educacion" {% if cat == 'educacion' %}checked{% endif %}> Educación</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="salud" {% if cat == 'salud' %}checked{% endif %}> Salud y Medicina</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="ingenieria" {% if cat == 'ingenieria' %}checked{% endif %}> Ingeniería</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="logistica" {% if cat == 'logistica' %}checked{% endif %}> Logística</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="moda" {% if cat == 'moda' %}checked{% endif %}> Moda y Textil</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="gastronomia" {% if cat == 'gastronomia' %}checked{% endif %}> Gastronomía</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="legal" {% if cat == 'legal' %}checked{% endif %}> Legal</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="recursos_humanos" {% if cat == 'recursos_humanos' %}checked{% endif %}> Recursos Humanos</label>
-                    <label class="filter-option"><input type="radio" name="cat" value="otro" {% if cat == 'otro' %}checked{% endif %}> Otro / General</label>
-                </div>
-
-                <div class="filter-group">
-                    <div class="filter-title">Modalidad</div>
-                    <label class="filter-option"><input type="radio" name="mod" value="" {% if not mod %}checked{% endif %}> Todas</label>
-                    <label class="filter-option"><input type="radio" name="mod" value="presencial" {% if mod == 'presencial' %}checked{% endif %}> Presencial</label>
-                    <label class="filter-option"><input type="radio" name="mod" value="remoto" {% if mod == 'remoto' %}checked{% endif %}> Remoto</label>
-                    <label class="filter-option"><input type="radio" name="mod" value="hibrido" {% if mod == 'hibrido' %}checked{% endif %}> Híbrido</label>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-full mt-4">Aplicar filtros</button>
-                {% if cat or mod %}
-                <a href="{% url 'buscar_empleos' %}{% if q %}?q={{ q }}{% endif %}" class="btn btn-outline w-full mt-2" style="text-align:center; display:block; text-decoration:none; margin-top:0.5rem;">Limpiar filtros</a>
-                {% endif %}
-            </form>
+            <button type="submit" class="btn btn-primary w-full mt-4">Aplicar filtros</button>
+            {% if cat or mod %}
+            <a href="{% url 'buscar_empleos' %}{% if q %}?q={{ q }}{% endif %}" class="btn btn-outline w-full mt-2" style="text-align:center; display:block; text-decoration:none; margin-top:0.5rem;">Limpiar filtros</a>
+            {% endif %}
+        </form>
+            </div>
         </div>
     </aside>
+
+    <div class="search-page-layout">
 
     <main class="results-main">
         <div class="results-header">
@@ -467,28 +519,11 @@ body {
 <script>
     function toggleFilters() {
         const wrapper = document.getElementById('filtersWrapper');
-        const btnText = document.getElementById('filtersBtnText');
+        const mainWrapper = document.getElementById('mainWrapper');
         
-        if (wrapper.style.maxHeight === '0px' || wrapper.style.maxHeight === '0' || !wrapper.style.maxHeight) {
-            wrapper.style.maxHeight = "2000px";
-            wrapper.style.opacity = "1";
-            btnText.innerText = "Ocultar";
-            wrapper.style.marginBottom = "1rem";
-        } else {
-            wrapper.style.maxHeight = "0";
-            wrapper.style.opacity = "0";
-            btnText.innerText = "Filtros";
-            wrapper.style.marginBottom = "0";
-        }
+        wrapper.classList.toggle('show');
+        if (mainWrapper) mainWrapper.classList.toggle('show');
     }
-
-    // Auto-open filters if a category or parameters are active
-    window.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('cat') || urlParams.get('mod') || urlParams.get('q')) {
-            toggleFilters();
-        }
-    });
 function toggleJobMenu(e, id) {
     e.preventDefault();
     e.stopPropagation();
