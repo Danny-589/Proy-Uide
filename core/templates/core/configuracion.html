@@ -191,7 +191,7 @@
     <!-- ── FORMULARIO: CUENTA ── -->
     <div class="cfg-card open" onclick="toggleAccordion(this, event)">
         <h2 class="cfg-card-title">
-            <div class="cfg-card-title-left"><span>👤</span> Preferencias de Cuenta</div>
+            <div class="cfg-card-title-left"><span>👤</span>Preferencias de Cuenta</div>
             <span class="cfg-accordion-arrow">▼</span>
         </h2>
         <div class="cfg-content-wrapper">
@@ -277,7 +277,8 @@
                         {% csrf_token %}
                         <label
                             style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-dark);">
-                            <input type="checkbox" name="requiere_2fa" value="1" id="toggle-2fa-checkbox" {% if request.user.profile.requiere_2fa %}checked{% endif %}
+                            <input type="checkbox" name="requiere_2fa" value="1" id="toggle-2fa-checkbox" {% if
+                                request.user.profile.requiere_2fa %}checked{% endif %}
                                 style="width: 20px; height: 20px; accent-color: var(--primary-blue);">
                             Habilitar verificación por correo (2FA)
                         </label>
