@@ -18,9 +18,9 @@
         background-color: var(--bg-page);
     }
 
-    /* Dashboard Layout */
     .dashboard-layout {
         display: flex;
+        width: 100%;
         max-width: 1400px;
         margin: 0 auto;
         padding: 2rem 1rem;
@@ -43,6 +43,8 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+        min-width: 0; /* Prevents flex blowout */
+        width: 100%;
     }
 
     /* Header Area */
@@ -58,6 +60,7 @@
         color: var(--text-gray);
         margin-bottom: 0.5rem;
         display: flex;
+        flex-wrap: wrap;
         gap: 0.5rem;
     }
 
@@ -271,6 +274,11 @@
         flex-shrink: 0;
     }
 
+    .contact-text {
+        flex: 1;
+        min-width: 0;
+    }
+
     .contact-text label {
         display: block;
         font-size: 0.75rem;
@@ -286,6 +294,7 @@
         color: var(--text-dark);
         font-weight: 500;
         word-break: break-all;
+        display: block;
     }
 
     /* Upload CV Card */
@@ -414,11 +423,11 @@
 
     @media (max-width: 992px) {
         .profile-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
         }
 
         .form-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
         }
 
         .profile-header-area {
@@ -429,17 +438,25 @@
 
         .header-actions {
             width: 100%;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 0.75rem;
         }
         
         .header-actions > * {
-            flex: 1;
+            width: 100%;
             justify-content: center;
-            text-align: center;
         }
 
         .dashboard-layout {
             padding: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .page-subtitle {
+            font-size: 0.85rem;
         }
     }
 </style>
