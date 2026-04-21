@@ -6,12 +6,12 @@
     :root {
         --bg-page: var(--bg-main);
         --card-bg: var(--bg-card);
-        --primary-blue: #3b82f6;
-        --primary-blue-hover: #2563eb;
+        --primary-blue: var(--primary-color);
+        --primary-blue-hover: var(--primary-hover);
         --text-dark: var(--text-main);
         --text-gray: var(--text-muted);
         --border-light: var(--border-color);
-        --bg-input: var(--bg-input);
+        --bg-input-custom: var(--bg-input, var(--bg-main));
     }
 
     body {
@@ -253,7 +253,7 @@
         align-items: center;
         gap: 1rem;
         padding: 1rem;
-        background: var(--bg-input);
+        background: var(--bg-input-custom);
         border-radius: 0.5rem;
         border: 1px solid var(--border-light);
         text-align: left;
@@ -263,7 +263,7 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: #e0f2fe;
+        background: var(--primary-light);
         color: var(--primary-blue);
         display: flex;
         align-items: center;
@@ -375,9 +375,9 @@
     .form-control {
         width: 100%;
         padding: 0.875rem 1rem;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--border-light);
         border-radius: 0.5rem;
-        background-color: var(--bg-input);
+        background-color: var(--bg-input-custom);
         font-family: inherit;
         font-size: 1rem;
         color: var(--text-dark);
@@ -387,8 +387,8 @@
     .form-control:focus {
         outline: none;
         border-color: var(--primary-blue);
-        background-color: var(--bg-input);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background-color: var(--bg-input-custom);
+        box-shadow: 0 0 0 3px var(--primary-light);
     }
 
     /* Bio area */
@@ -405,6 +405,12 @@
         list-style: none;
         padding: 0;
     }
+
+    /* Messages */
+    .messages-container { margin-bottom: 1.5rem; }
+    .alert { padding: 1rem; border-radius: 0.5rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .alert-success { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; }
+    .alert-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
 
     @media (max-width: 992px) {
         .profile-grid {
@@ -432,10 +438,9 @@
             {% csrf_token %}
 
             {% if messages %}
-            <div style="margin-bottom: 1.5rem;">
+            <div class="messages-container">
                 {% for message in messages %}
-                <div
-                    style="padding: 1rem; border-radius: 0.5rem; font-weight: 500; {% if message.tags == 'success' %}background: #dcfce7; border: 1px solid #22c55e; color: #166534;{% else %}background: #fee2e2; border: 1px solid #ef4444; color: #991b1b;{% endif %}">
+                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -443,8 +448,7 @@
             {% endif %}
 
             {% if profile_form.errors or user_form.errors %}
-            <div
-                style="padding: 1rem; background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+            <div class="alert alert-error">
                 <strong>Por favor, corrige los siguientes errores:</strong><br>
                 {{ profile_form.hoja_de_vida.errors }}
                 {{ user_form.username.errors }}
@@ -535,10 +539,10 @@
                                         onmouseout="this.style.background='var(--border-color)'">⬇️</a>
 
                                     <button type="submit" formaction="{% url 'eliminar_cv' %}" onclick="return confirm('¿Estás seguro de que deseas eliminar tu hoja de vida?');"
-                                        style="background: #fee2e2; border: 1px solid #f87171; color: #ef4444; border-radius: 4px; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
+                                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; border-radius: 4px; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
                                         title="Eliminar"
-                                        onmouseover="this.style.background='#fca5a5'; this.style.color='black'"
-                                        onmouseout="this.style.background='#fee2e2'; this.style.color='#ef4444'">🗑️</button>
+                                        onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.color='#ef4444'"
+                                        onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444'">🗑️</button>
                                 </div>
                             </div>
                             {% endif %}
